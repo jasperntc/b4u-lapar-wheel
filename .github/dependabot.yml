@@ -7,6 +7,9 @@ updates:
     groups:
       dev-tooling:
         dependency-type: development
+      # react-dom pins react to its own version, so separate bumps fail npm ci.
+      react:
+        patterns: ["react", "react-dom"]
     ignore:
       # typescript-eslint (used by eslint-config-next) supports TypeScript
       # below 6.1 only. Lift this once it supports newer versions:
