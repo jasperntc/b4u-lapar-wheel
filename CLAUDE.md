@@ -35,7 +35,8 @@ CI runs audit, lint, typecheck, test and build on every PR. Run all of them befo
 
 ## Data rules
 
-- Restaurant data is typed against `Restaurant`, `Region` and `Halal` from the spec. Change the types only with my approval.
+- Restaurant data is typed against `Restaurant`, `Region` and `Halal` from the spec, in `content/types.ts`. Change the types only with my approval. Data lives in `content/regions.ts` and `content/restaurants.ts`, and `tests/restaurants.test.ts` checks it.
+- `lib/filter.ts` (`filterRestaurants`) is mine to hand-code. Don't write or change its body. `tests/filter.test.ts` is its spec.
 - Halal has three states: `certified` (with `source` and `checkedAt`), `not-halal` and `unknown`. The default is `unknown`.
 - Halal is never inferred: not from cuisine, name, area or the OSM `diet:halal` tag. Only I set `certified`, after checking JAKIM's directory.
 - A `certified` entry needs a non-empty `source` and a real `checkedAt` date (`YYYY-MM-DD`, not in the future). A test enforces this. Never weaken that test to make data pass.
