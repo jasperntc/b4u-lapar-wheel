@@ -1,0 +1,36 @@
+{
+  "name": "b4u-lapar-wheel",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "postbuild": "node scripts/nest-out.mjs && vitest run --config vitest.build.config.ts",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "preview": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^10",
+    "eslint-config-next": "16.4.0",
+    "tailwindcss": "^4",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.4",
+    "wrangler": "^4.149.0"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}

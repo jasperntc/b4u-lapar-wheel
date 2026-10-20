@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "b4u-lapar-wheel",
+  "compatibility_date": "2026-10-01",
+  // Assets only. dist/ holds the export under lapar-wheel/ (see scripts/nest-out.mjs),
+  // because Workers static assets match the full request path.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+    // /lapar-wheel serves lapar-wheel/index.html, matching next/link (no trailing slash).
+    "html_handling": "drop-trailing-slash"
+  },
+  // Routes, not a custom domain: the hostname belongs to the Built4You hub,
+  // whose DNS record these routes need.
+  "routes": [
+    { "pattern": "built4you.jasperntc.dev/lapar-wheel", "zone_name": "jasperntc.dev" },
+    { "pattern": "built4you.jasperntc.dev/lapar-wheel/*", "zone_name": "jasperntc.dev" }
+  ]
+}

@@ -1,0 +1,136 @@
+@import "./brand-tokens.css";
+@import "tailwindcss";
+
+/* brand-tokens.css loads its fonts from /fonts/, the hub's root. This app lives
+   under the basePath, so the same faces are redeclared here; the later rule wins. */
+@font-face { font-family: "Bricolage Grotesque"; src: url("/lapar-wheel/fonts/BricolageGrotesque-latin.woff2") format("woff2"); font-weight: 200 800; font-stretch: 75% 100%; font-display: swap; }
+@font-face { font-family: Caveat; src: url("/lapar-wheel/fonts/Caveat-latin-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+/* Tailwind names for the brand tokens. Values live in brand-tokens.css only. */
+@theme inline {
+  /* No default palette: only brand colours exist. */
+  --color-*: initial;
+  --color-surface-kraft: var(--surface-kraft);
+  --color-surface-label: var(--surface-label);
+  --color-label-edge: var(--label-edge);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-stamp: var(--stamp);
+  --color-on-stamp: var(--on-stamp);
+  --color-stamp-green: var(--stamp-green);
+  --color-focus: var(--focus);
+  --color-wheel-tomato: var(--wheel-tomato);
+  --color-wheel-marigold: var(--wheel-marigold);
+  --color-wheel-leaf: var(--wheel-leaf);
+  --color-wheel-sea: var(--wheel-sea);
+  --color-wheel-denim: var(--wheel-denim);
+  --color-wheel-rose: var(--wheel-rose);
+  --color-wheel-plum: var(--wheel-plum);
+  --color-on-wheel-dark: var(--on-wheel-dark);
+  --color-on-wheel-light: var(--on-wheel-light);
+  --color-wheel-rim: var(--wheel-rim);
+
+  /* Same names as the brand tokens. The brand's unlayered :root wins over
+     Tailwind's theme layer, so these resolve to the brand values. */
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-hand: var(--font-hand);
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-pill: var(--radius-pill);
+  --shadow-label: var(--shadow-label);
+  --shadow-press: var(--shadow-press);
+
+  /* p-4 = --space-4, and so on. */
+  --spacing: var(--space-1);
+
+  /* Type roles from the design system. They live here until the token export
+     includes them. No default sizes: only brand roles exist. */
+  --text-*: initial;
+  --text-display-xl: clamp(3.5rem, 15vw, 8rem);
+  --text-display-xl--line-height: 0.9;
+  --text-display-xl--font-weight: 800;
+  --text-display: 2.75rem;
+  --text-display--line-height: 2.75rem;
+  --text-display--font-weight: 800;
+  --text-title: 1.625rem;
+  --text-title--line-height: 1.875rem;
+  --text-title--font-weight: 700;
+  --text-stamp-text: 0.9375rem;
+  --text-stamp-text--line-height: 1.125rem;
+  --text-stamp-text--font-weight: 800;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.625rem;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.25rem;
+  --text-button: 1rem;
+  --text-button--line-height: 1.25rem;
+  --text-button--font-weight: 600;
+  --text-hand: 1.625rem;
+  --text-hand--line-height: 1.75rem;
+  --text-hand--font-weight: 700;
+}
+
+/* Kraft grain: two fixed layers between the kraft background and the page.
+   Each is a token fill seen through a noise mask: ink-soft for fibres,
+   surface-label for flecks. Labels are opaque, so the grain only shows on
+   bare kraft. Fixed and static: it never repaints on scroll. Opacity is the
+   most any pixel moves towards the token, which the contrast check uses. */
+:root {
+  --grain-fibre: 0.06;
+  --grain-fleck: 0.05;
+  --grain-fibre-mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.08 0.9' numOctaves='2' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 0 0 -1.2'/></filter><rect width='240' height='240' filter='url(%23f)'/></svg>");
+  --grain-fleck-mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='1' seed='8' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 8 0 0 0 -5'/></filter><rect width='240' height='240' filter='url(%23f)'/></svg>");
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --grain-fibre: 0.02;
+    --grain-fleck: 0.03;
+  }
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-size: 240px;
+  mask-size: 240px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+
+body::before {
+  background-color: var(--ink-soft);
+  opacity: var(--grain-fibre);
+  -webkit-mask-image: var(--grain-fibre-mask);
+  mask-image: var(--grain-fibre-mask);
+}
+
+body::after {
+  background-color: var(--surface-label);
+  opacity: var(--grain-fleck);
+  -webkit-mask-image: var(--grain-fleck-mask);
+  mask-image: var(--grain-fleck-mask);
+}
+
+/* Taps: no double-tap zoom delay, and a faint stamp tint instead of the
+   browser's grey flash. */
+html {
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--stamp) 20%, transparent);
+}
+
+a,
+button {
+  touch-action: manipulation;
+}
+
+/* Focus rings: 2px solid focus, 2px offset, on every interactive element. */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}

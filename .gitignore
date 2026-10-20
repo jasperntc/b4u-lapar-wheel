@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+.next/
+.astro/
+.vercel/
+.netlify/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Caches
+.cache/
+.eslintcache
+*.tsbuildinfo
+coverage/
+
+# Next.js and Cloudflare
+next-env.d.ts
+.wrangler/
+.dev.vars*
+*.pem
+
+# Local Claude Code settings
+.claude/
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
