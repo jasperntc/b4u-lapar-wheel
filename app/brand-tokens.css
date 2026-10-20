@@ -1,0 +1,64 @@
+/* Built4You tokens, generated from the Built4You design system (tokens.json v2).
+   Edit the design system, then regenerate; don't hand-edit values here. */
+
+@font-face { font-family: "Bricolage Grotesque"; src: url("/fonts/BricolageGrotesque-latin.woff2") format("woff2"); font-weight: 200 800; font-stretch: 75% 100%; font-display: swap; }
+@font-face { font-family: Caveat; src: url("/fonts/Caveat-latin-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  color-scheme: light dark;
+  --surface-kraft: #cda77a;
+  --surface-label: #fafaf6;
+  --label-edge: #e3d9c8;
+  --ink: #231f1a;
+  --ink-soft: #5e554a;
+  --stamp: #3b3c8c;
+  --on-stamp: #fafaf6;
+  --stamp-green: #2e6b45;
+  --focus: #231f1a;
+  --wheel-tomato: #c8402a;
+  --wheel-marigold: #f2a71b;
+  --wheel-leaf: #7bae5e;
+  --wheel-sea: #2f9c93;
+  --wheel-denim: #4f78a8;
+  --wheel-rose: #e58a9a;
+  --wheel-plum: #8c4a6b;
+  --on-wheel-dark: #231f1a;
+  --on-wheel-light: #ffffff;
+  --wheel-rim: #231f1a;
+  --shadow-label: 0 1px 0 rgba(35, 31, 26, 0.12), 0 10px 18px -12px rgba(35, 31, 26, 0.45);
+  --shadow-press: 0 3px 0 #231f1a;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-pill: 999px;
+  --font-display: "Bricolage Grotesque", "Arial Narrow", sans-serif;
+  --font-sans: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-hand: Caveat, "Segoe Print", cursive;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-kraft: #1f1a15;
+    --surface-label: #3a3128;
+    --label-edge: #5a4e40;
+    --ink: #f1ebe1;
+    --ink-soft: #bdb2a3;
+    --stamp: #abadf2;
+    --on-stamp: #1f1a15;
+    --stamp-green: #8fd3a6;
+    --focus: #f1ebe1;
+    --wheel-rim: #f1ebe1;
+    --shadow-label: 0 1px 0 rgba(0, 0, 0, 0.5), 0 10px 18px -12px rgba(0, 0, 0, 0.8);
+    --shadow-press: 0 3px 0 #5c5eb0;
+  }
+}
+
+.condensed { font-family: var(--font-display); font-variation-settings: "wdth" 75; }
