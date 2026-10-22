@@ -2,8 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Restaurant } from "../content/types";
 import { filterRestaurants, type Filters } from "../lib/filter";
 
-// Jasper hand-codes filterRestaurants. Remove `.skip` when you start.
-describe.skip("filterRestaurants", () => {
+describe("filterRestaurants", () => {
   const certified = { status: "certified", source: "JAKIM directory", checkedAt: "2026-10-01" } as const;
 
   const list: Restaurant[] = [
