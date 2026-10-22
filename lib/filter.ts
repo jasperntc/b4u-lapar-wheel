@@ -14,6 +14,21 @@ export type Filters = {
  * The restaurants that match every filter, in their original order.
  * Hand-coded by Jasper: tests/filter.test.ts is the spec.
  */
+
 export function filterRestaurants(list: readonly Restaurant[], filters: Filters): Restaurant[] {
-  throw new Error("filterRestaurants isn’t written yet");
+  return list.filter((restaurant) => {
+    if (restaurant.regionId !== filters.regionId){
+      return false;
+    }
+    if (filters.area && restaurant.area !== filters.area){
+      return false;
+    }
+    if (filters.cuisine && restaurant.cuisine !== filters.cuisine){
+      return false;
+    }
+    if (filters.halalOnly && restaurant.halal.status !== "certified"){
+      return false;
+    }
+    return true;
+  })
 }
