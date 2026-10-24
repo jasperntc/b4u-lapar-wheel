@@ -128,6 +128,52 @@ export function buildCandidates(
 
 const csvCell = (v: string) => (/[",\n\r]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v);
 
-export function toCsv(rows: readonly Candidate[]): string {
-  return [CSV_COLUMNS.join(","), ...rows.map((r) => CSV_COLUMNS.map((c) => csvCell(r[c])).join(","))].join("\n") + "\n";
+// A UTF-8 byte order mark, so Excel on Windows opens Chinese and Malay names correctly.
+const BOM = "﻿";
+
+export function toCsv(rows: readonly Record<string, string>[], columns: readonly string[] = CSV_COLUMNS): string {
+  return BOM + [columns.join(","), ...rows.map((r) => columns.map((c) => csvCell(r[c] ?? "")).join(","))].join("\n") + "\n";
+}
+
+// UTF-8 text read as Windows-1252 and saved again: "é" becomes "Ã©", "’" becomes "â€™",
+// and Chinese characters start with "å" (廣 becomes "å»£").
+const MOJIBAKE = /Ã|â€|å/;
+
+/** Throws with the line and a fix if `text` looks like UTF-8 saved with the wrong encoding. */
+export function assertNoMojibake(text: string, file: string): void {
+  const at = text.search(MOJIBAKE);
+  if (at === -1) return;
+  const line = text.slice(0, at).split("\n").length;
+  const snippet = text.slice(Math.max(0, at - 20), at + 20).replaceAll("\n", " ");
+  throw new Error(
+    `${file} looks mis-encoded: line ${line} has "${text.slice(at, at + 3)}" in "…${snippet}…". ` +
+      `It was probably saved as ANSI (Windows-1252) instead of UTF-8. Restore it with git, or in Excel use ` +
+      `File > Save As > "CSV UTF-8 (Comma delimited)". Nothing was written.`,
+  );
+}
+
+/** Parses CSV written by toCsv or a spreadsheet: a leading BOM, quoted cells, doubled quotes, newlines inside quotes, CRLF. */
+export function parseCsv(input: string): { columns: string[]; rows: Record<string, string>[] } {
+  const text = input.startsWith(BOM) ? input.slice(1) : input;
+  const records: string[][] = [];
+  let record: string[] = [];
+  let cell = "";
+  let quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"' && text[i + 1] === '"') [cell, i] = [cell + '"', i + 1];
+      else if (ch === '"') quoted = false;
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ",") [record, cell] = [[...record, cell], ""];
+    else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      records.push([...record, cell]);
+      [record, cell] = [[], ""];
+    } else cell += ch;
+  }
+  if (cell || record.length) records.push([...record, cell]);
+  const [columns = [], ...data] = records.filter((r) => r.some((c) => c !== ""));
+  return { columns, rows: data.map((r) => Object.fromEntries(columns.map((c, i) => [c, r[i] ?? ""]))) };
 }

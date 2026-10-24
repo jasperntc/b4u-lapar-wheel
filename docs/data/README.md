@@ -56,6 +56,34 @@ There's no halal column. Halal stays `unknown` until it's checked in JAKIM's dir
 - Kopitiam also comes from a name containing "kopitiam" or "kedai kopi". Mamak comes only from an explicit `mamak` or `nasi_kandar` tag, or a name containing "mamak" or "nasi kandar".
 - `malaysian` stays blank, because it could mean Malay, Chinese or mamak. Anything unclear stays blank and is never guessed.
 
+## Suggestions
+
+`npm run data:suggest` adds `suggested` and `suggest_reason` just before `keep`, then re-sorts the CSV. It works only from the CSV's own columns: no network, no Google data, and no judgement calls. Re-running it gives the same result.
+
+Rules, first match wins:
+
+1. **drop:** Overture's `operating_status` is set and isn't `open`. A blank status means unknown, not closed. Every KK place in release 2026-10-21.0 has a blank status, so this rule drops nothing today.
+2. **drop:** on Gaya Island, inside Pulau Gaya's OpenStreetMap bounding box: south 5.9917, west 116.0049, north 6.0441, east 116.0663. No mainland candidate falls inside it.
+3. **keep:** the place is in both sources.
+4. **keep:** the place is Overture-only with confidence 0.7 or higher.
+5. **keep:** the place is OSM-only with `osm_opening_hours`.
+6. **unsure:** everything else.
+
+A blank area or cuisine adds "needs area" or "needs cuisine" to `suggest_reason`.
+
+Rows are sorted by area, then keep, unsure, drop, then highest Overture confidence first.
+
+The script never changes `keep` or `reason`: it checks every row before writing and stops without saving if either would change. Suggestions are only a starting point. You decide in `keep`.
+
+**Don't re-run `data:compare` after you start pruning.** It rebuilds `data/candidates-kk.csv` from `data/raw/` and would wipe your `keep` and `reason` columns. `data:suggest` is safe to re-run.
+
+## Editing in Excel
+
+- **Opening:** both CSVs are written as UTF-8 with a byte order mark (BOM), so Excel on Windows opens Chinese and Malay names correctly.
+- **Saving:** use **File > Save As > "CSV UTF-8 (Comma delimited)"**. A plain "CSV" save uses Windows-1252, which garbles or drops Chinese characters.
+- **Garbled saves:** if a file is saved with the wrong encoding, `data:suggest` stops before writing. It reports the line and shows text like `Ã©`, `â€™` or `å»£`. Restore the file from git, or re-save it as CSV UTF-8.
+- **Close Excel before running a script.** Excel locks the file while it's open, and the script then fails with `EBUSY`.
+
 ## Manual additions
 
 Add places yourself to `data/manual-kk.csv`:
