@@ -36,6 +36,8 @@ CI runs audit, lint, typecheck, test and build on every PR. Run all of them befo
 ## Data rules
 
 - Restaurant data is typed against `Restaurant`, `Region` and `Halal` from the spec, in `content/types.ts`. Change the types only with my approval. Data lives in `content/regions.ts` and `content/restaurants.ts`, and `tests/restaurants.test.ts` checks it.
+- Each restaurant has `lat` and `lon`, read from OpenStreetMap or Overture, never from Google.
+- Candidate data is pulled and compared by `npm run data:pull` and `npm run data:compare`. See `docs/data/README.md`. DuckDB lives only in `scripts/data/`'s own package; never add it to the root `package.json`.
 - `lib/filter.ts` (`filterRestaurants`) is mine to hand-code. Don't write or change its body. `tests/filter.test.ts` is its spec.
 - Halal has three states: `certified` (with `source` and `checkedAt`), `not-halal` and `unknown`. The default is `unknown`.
 - Halal is never inferred: not from cuisine, name, area or the OSM `diet:halal` tag. Only I set `certified`, after checking JAKIM's directory.

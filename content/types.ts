@@ -15,6 +15,8 @@ export type Restaurant = {
   area: string;
   cuisine: string;
   halal: Halal;
+  lat: number;
+  lon: number;
   priceLevel?: 1 | 2 | 3; // stored, not filtered in v1
   osmId?: string; // OSM-seeded entries
 };
