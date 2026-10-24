@@ -1,0 +1,10 @@
+{
+  "name": "lapar-wheel-data",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Data pull tooling. Installed only by `npm run data:pull`, never by the app's install, CI or build.",
+  "dependencies": {
+    "@duckdb/node-api": "1.5.6-r.1"
+  }
+}

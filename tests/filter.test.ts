@@ -6,11 +6,11 @@ describe("filterRestaurants", () => {
   const certified = { status: "certified", source: "JAKIM directory", checkedAt: "2026-10-01" } as const;
 
   const list: Restaurant[] = [
-    { id: "a", name: "A", regionId: "kota-kinabalu", area: "Gaya Street", cuisine: "Malay", halal: certified },
-    { id: "b", name: "B", regionId: "kota-kinabalu", area: "Gaya Street", cuisine: "Chinese", halal: { status: "not-halal" } },
-    { id: "c", name: "C", regionId: "kota-kinabalu", area: "Damai", cuisine: "Malay", halal: { status: "unknown" } },
-    { id: "d", name: "D", regionId: "kota-kinabalu", area: "Damai", cuisine: "Chinese", halal: certified },
-    { id: "e", name: "E", regionId: "sandakan", area: "Gaya Street", cuisine: "Malay", halal: certified },
+    { id: "a", name: "A", regionId: "kota-kinabalu", area: "Gaya Street", cuisine: "Malay", halal: certified, lat: 5.983, lon: 116.077 },
+    { id: "b", name: "B", regionId: "kota-kinabalu", area: "Gaya Street", cuisine: "Chinese", halal: { status: "not-halal" }, lat: 5.984, lon: 116.078 },
+    { id: "c", name: "C", regionId: "kota-kinabalu", area: "Damai", cuisine: "Malay", halal: { status: "unknown" }, lat: 5.970, lon: 116.090 },
+    { id: "d", name: "D", regionId: "kota-kinabalu", area: "Damai", cuisine: "Chinese", halal: certified, lat: 5.971, lon: 116.091 },
+    { id: "e", name: "E", regionId: "sandakan", area: "Gaya Street", cuisine: "Malay", halal: certified, lat: 5.839, lon: 118.117 },
   ];
 
   const ids = (filters: Filters) => filterRestaurants(list, filters).map((r) => r.id);

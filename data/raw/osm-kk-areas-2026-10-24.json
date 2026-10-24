@@ -1,0 +1,1457 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-10-24T08:26:21Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 369493917,
+  "lat": 6.0301847,
+  "lon": 116.1580498,
+  "tags": {
+    "alt_name": "Manggatal",
+    "name": "Menggatal",
+    "name:en": "Menggatal",
+    "name:zh": "孟加达",
+    "place": "town",
+    "wikidata": "Q1409278",
+    "wikipedia": "en:Manggatal"
+  }
+},
+{
+  "type": "node",
+  "id": 369497945,
+  "lat": 5.9065080,
+  "lon": 116.0890694,
+  "tags": {
+    "alt_name:ar": "دونقونقون;دونجونجون",
+    "ele": "59",
+    "name": "Donggongon",
+    "name:ar": "دنقنقن",
+    "name:en": "Donggongon",
+    "name:zh": "东贡岸",
+    "place": "town",
+    "population": "176667",
+    "source": "ele @ floodmap",
+    "wikidata": "Q989415",
+    "wikipedia": "en:Donggongon"
+  }
+},
+{
+  "type": "node",
+  "id": 2094338939,
+  "lat": 5.9405781,
+  "lon": 116.0754755,
+  "tags": {
+    "name": "Taman Bintang",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2094338941,
+  "lat": 5.9397480,
+  "lon": 116.0746251,
+  "tags": {
+    "name": "Taman Mei Lok",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2101187435,
+  "lat": 5.9553776,
+  "lon": 116.0820309,
+  "tags": {
+    "name": "Luyang Perdana",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2101187436,
+  "lat": 5.9504598,
+  "lon": 116.0828526,
+  "tags": {
+    "name": "Taman Kinamount",
+    "name:ms": "Taman Kinamount",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2101187437,
+  "lat": 5.9516164,
+  "lon": 116.0812254,
+  "tags": {
+    "name": "Taman Klasik",
+    "name:ms": "Taman Klasik",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2103674592,
+  "lat": 5.9266653,
+  "lon": 116.0625258,
+  "tags": {
+    "name": "Taman Deluxe",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2103674594,
+  "lat": 5.9239688,
+  "lon": 116.0624282,
+  "tags": {
+    "name": "Taman Ganang",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2103674595,
+  "lat": 5.9230703,
+  "lon": 116.0613024,
+  "tags": {
+    "name": "Taman Olivia Phase 1",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2103674596,
+  "lat": 5.9206999,
+  "lon": 116.0607257,
+  "tags": {
+    "name": "Taman Olivia Phase 2",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2105338796,
+  "lat": 5.9436439,
+  "lon": 116.0869659,
+  "tags": {
+    "name": "Taman Milek Phase 1",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2105347456,
+  "lat": 5.9922378,
+  "lon": 116.1359580,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Inanam",
+    "name:zh": "下南南",
+    "place": "village",
+    "wikidata": "Q769178",
+    "wikipedia": "en:Inanam"
+  }
+},
+{
+  "type": "node",
+  "id": 2117392576,
+  "lat": 5.9868087,
+  "lon": 116.0948967,
+  "tags": {
+    "name": "Taman Likas Jaya",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2122101620,
+  "lat": 5.9428187,
+  "lon": 116.0652930,
+  "tags": {
+    "name": "Taman Sri Bukit Mas",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2122101621,
+  "lat": 5.9415271,
+  "lon": 116.0641087,
+  "tags": {
+    "name": "Taman Waja",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2450171858,
+  "lat": 5.9533677,
+  "lon": 116.0557423,
+  "tags": {
+    "admin_level": "10",
+    "designation": "Tanjung",
+    "ele": "22",
+    "name": "Tanjung Aru",
+    "name:zh": "丹绒亚路",
+    "place": "village",
+    "source": "ele @ floodmap",
+    "wikidata": "Q41861896",
+    "wikipedia": "en:Tanjung Aru"
+  }
+},
+{
+  "type": "node",
+  "id": 2453838188,
+  "lat": 5.9588729,
+  "lon": 116.0529802,
+  "tags": {
+    "designation": "Kampung",
+    "name": "Kampung Tanjung Aru Lama",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2462992481,
+  "lat": 5.9685119,
+  "lon": 116.0589651,
+  "tags": {
+    "name": "Sutera Harbour",
+    "phone": "+60 88 318 888",
+    "place": "neighbourhood",
+    "website": "https://www.suteraharbour.com/v4/"
+  }
+},
+{
+  "type": "node",
+  "id": 2466209546,
+  "lat": 5.9359713,
+  "lon": 116.0794232,
+  "tags": {
+    "name": "Kampung Kobusak",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2467277114,
+  "lat": 5.9230913,
+  "lon": 116.0839344,
+  "tags": {
+    "landuse": "residential",
+    "name": "Taman Palm Villa",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2467288018,
+  "lat": 5.9094814,
+  "lon": 116.0964150,
+  "tags": {
+    "name": "Kampung Hungab",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 2482152222,
+  "lat": 5.9498226,
+  "lon": 116.0685965,
+  "tags": {
+    "landuse": "residential",
+    "name": "Taman Sri Mega 1",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2482157894,
+  "lat": 5.9475803,
+  "lon": 116.0733756,
+  "tags": {
+    "name": "Taman B.P.L",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 2690731724,
+  "lat": 6.0316354,
+  "lon": 116.1318273,
+  "tags": {
+    "name": "Alamesra Plaza",
+    "place": "neighbourhood",
+    "source": "bing"
+  }
+},
+{
+  "type": "node",
+  "id": 3390980521,
+  "lat": 5.9821175,
+  "lon": 116.1311131,
+  "tags": {
+    "name": "Bayumas 118",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 3391107828,
+  "lat": 5.9870275,
+  "lon": 116.1286366,
+  "tags": {
+    "name": "Neutron Park",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505627,
+  "lat": 5.9413845,
+  "lon": 116.0564984,
+  "tags": {
+    "name": "Taman Winley",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505628,
+  "lat": 5.9531637,
+  "lon": 116.0675790,
+  "tags": {
+    "designation": "kampung",
+    "name": "Kopungit",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505669,
+  "lat": 5.9382062,
+  "lon": 116.0706379,
+  "tags": {
+    "name": "Taman Sri Kepayan",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505690,
+  "lat": 5.9447423,
+  "lon": 116.0686003,
+  "tags": {
+    "name": "Taman Austral",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505703,
+  "lat": 5.9478611,
+  "lon": 116.0724438,
+  "tags": {
+    "name": "Taman Tuan Huatt",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505704,
+  "lat": 5.9515080,
+  "lon": 116.0713184,
+  "tags": {
+    "name": "Taman Sri Mega 2",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505721,
+  "lat": 5.9539087,
+  "lon": 116.0751619,
+  "tags": {
+    "name": "Taman Fortuna",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505730,
+  "lat": 5.9508744,
+  "lon": 116.0770660,
+  "tags": {
+    "name": "Taman Fortuna Fasa 2",
+    "name:ms": "Taman Fortuna Fasa 2",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505806,
+  "lat": 5.9669048,
+  "lon": 116.0768466,
+  "tags": {
+    "name": "Taman Sang Kancil",
+    "name:ms": "Taman Sang Kancil",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505816,
+  "lat": 5.9685874,
+  "lon": 116.0898284,
+  "tags": {
+    "name": "Taman Damai",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505842,
+  "lat": 5.9694322,
+  "lon": 116.0849938,
+  "tags": {
+    "name": "Sunny Garden",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505843,
+  "lat": 5.9670245,
+  "lon": 116.0841656,
+  "tags": {
+    "name": "Beauty Garden",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505844,
+  "lat": 5.9728466,
+  "lon": 116.0879172,
+  "tags": {
+    "name": "Taman Keramat",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505854,
+  "lat": 5.9775162,
+  "lon": 116.0897341,
+  "tags": {
+    "name": "Taman Maju Kota",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505879,
+  "lat": 5.9917406,
+  "lon": 116.0869708,
+  "tags": {
+    "name": "Signal Hill Park",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505906,
+  "lat": 5.9767155,
+  "lon": 116.0821372,
+  "tags": {
+    "name": "Ujana Seri Fantasi",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4247505907,
+  "lat": 5.9804319,
+  "lon": 116.0856153,
+  "tags": {
+    "name": "Taman Manikar",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 4510965993,
+  "lat": 5.8833333,
+  "lon": 116.0500000,
+  "tags": {
+    "name": "Putatan",
+    "name:ar": "بوتاتان",
+    "name:en": "Putatan",
+    "name:ms": "Putatan",
+    "name:zh": "必打丹",
+    "name:zh-Hans": "必打丹",
+    "name:zh-Hant": "必打丹",
+    "place": "town",
+    "wikidata": "Q1011949",
+    "wikipedia": "en:Putatan"
+  }
+},
+{
+  "type": "node",
+  "id": 4936713664,
+  "lat": 5.9343169,
+  "lon": 116.0734246,
+  "tags": {
+    "name": "Taman Kendara",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5216289737,
+  "lat": 5.9831059,
+  "lon": 116.1237521,
+  "tags": {
+    "name": "Taman Dai Ming Baru",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5216289757,
+  "lat": 5.9809041,
+  "lon": 116.1277657,
+  "tags": {
+    "name": "Taman Fajar",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5216289769,
+  "lat": 5.9808929,
+  "lon": 116.1259988,
+  "tags": {
+    "name": "Taman Saga",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5216289806,
+  "lat": 5.9819942,
+  "lon": 116.1272715,
+  "tags": {
+    "name": "Taman Mepo",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5216289811,
+  "lat": 5.9815232,
+  "lon": 116.1258059,
+  "tags": {
+    "name": "Taman May May",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5218111985,
+  "lat": 5.9802904,
+  "lon": 116.1200601,
+  "tags": {
+    "name": "Taman Kolombong",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5218111986,
+  "lat": 5.9798423,
+  "lon": 116.1220637,
+  "tags": {
+    "name": "Taman Nelly",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5218111987,
+  "lat": 5.9793701,
+  "lon": 116.1193493,
+  "tags": {
+    "name": "Taman Murni",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5218111988,
+  "lat": 5.9770226,
+  "lon": 116.1194968,
+  "tags": {
+    "name": "Taman Casa Palma",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5218111990,
+  "lat": 5.9780470,
+  "lon": 116.1199608,
+  "tags": {
+    "name": "Taman Angsana",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5218111991,
+  "lat": 5.9787699,
+  "lon": 116.1204329,
+  "tags": {
+    "name": "Taman Megah",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 5218167135,
+  "lat": 5.9828092,
+  "lon": 116.1312411,
+  "tags": {
+    "name": "Taman Nountun Juta",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 6220457785,
+  "lat": 5.9182849,
+  "lon": 116.0620597,
+  "tags": {
+    "name": "Ganang Villa",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 8882863836,
+  "lat": 6.0096831,
+  "lon": 116.1210838,
+  "tags": {
+    "name": "Ujana",
+    "place": "neighbourhood",
+    "source": "https://openstreetcam.org/details/2232966/650"
+  }
+},
+{
+  "type": "node",
+  "id": 8940198764,
+  "lat": 6.0197671,
+  "lon": 116.1227587,
+  "tags": {
+    "name": "Taman Kingfisher",
+    "name:zh": "翠鸟园",
+    "place": "quarter"
+  }
+},
+{
+  "type": "node",
+  "id": 9823744271,
+  "lat": 5.9779635,
+  "lon": 116.0731772,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Kampung Air",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 9846474211,
+  "lat": 5.9876497,
+  "lon": 116.1023998,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Likas",
+    "name:en": "Likas",
+    "name:ms": "Likas",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 9851797223,
+  "lat": 5.9442984,
+  "lon": 116.0762174,
+  "tags": {
+    "name": "Taman Kirana",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 9852243114,
+  "lat": 5.9356907,
+  "lon": 116.0856360,
+  "tags": {
+    "designation": "Taman",
+    "name": "Hiburan",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 9859110885,
+  "lat": 5.9571783,
+  "lon": 116.0502698,
+  "tags": {
+    "designation": "Kampung",
+    "name": "Kampung Tanjung Aru Baru",
+    "place": "neighbourhood",
+    "source": "survey"
+  }
+},
+{
+  "type": "node",
+  "id": 9867481687,
+  "lat": 5.9607918,
+  "lon": 116.0610589,
+  "tags": {
+    "name": "Grace Square",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 9867612850,
+  "lat": 5.9611359,
+  "lon": 116.0599002,
+  "tags": {
+    "name": "Grace Ville",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 9878728509,
+  "lat": 5.9415386,
+  "lon": 116.0778737,
+  "tags": {
+    "name": "Taman Cantek",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 9897474011,
+  "lat": 5.9053514,
+  "lon": 116.1044142,
+  "tags": {
+    "name": "Kampung Penampang Proper",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 9906742534,
+  "lat": 5.9583428,
+  "lon": 116.0672468,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Sembulan",
+    "name:en": "Sembulan",
+    "name:ms": "Sembulan",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 9907957617,
+  "lat": 5.9409170,
+  "lon": 116.0587040,
+  "tags": {
+    "name": "Taman Shangri-La Heights",
+    "name:ms": "Taman Shangri-La Heights",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 9911492372,
+  "lat": 5.9908427,
+  "lon": 116.1283475,
+  "tags": {
+    "name": "Nountun Industrial Estate",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 9911562733,
+  "lat": 5.9933742,
+  "lon": 116.1290529,
+  "tags": {
+    "name": "Inanam Business Centre",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 9935039139,
+  "lat": 5.9455056,
+  "lon": 116.0908931,
+  "tags": {
+    "name": "Heritage Plaza Luyang",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10102313251,
+  "lat": 5.9372808,
+  "lon": 116.0850044,
+  "tags": {
+    "name": "Taman Fraser",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10110716081,
+  "lat": 5.9628912,
+  "lon": 116.0624966,
+  "tags": {
+    "name": "Grace Garden",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10113348253,
+  "lat": 5.9571903,
+  "lon": 116.0609811,
+  "tags": {
+    "designation": "Taman",
+    "name": "Sepelang",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10150266490,
+  "lat": 5.9647186,
+  "lon": 116.1055004,
+  "tags": {
+    "name": "Taman Ria 1",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10156233942,
+  "lat": 5.8733347,
+  "lon": 116.0904479,
+  "tags": {
+    "name": "Park Residence",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10158134278,
+  "lat": 5.8759415,
+  "lon": 116.1000824,
+  "tags": {
+    "name": "Sugud",
+    "place": "town",
+    "wikidata": "Q61113600",
+    "wikipedia": "en:Donggongon"
+  }
+},
+{
+  "type": "node",
+  "id": 10166339266,
+  "lat": 5.9510012,
+  "lon": 116.0705674,
+  "tags": {
+    "name": "Taman Kepayan Ridge",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10166429384,
+  "lat": 5.9657217,
+  "lon": 116.1035719,
+  "tags": {
+    "alt_name": "Taman Hijau",
+    "alt_name:en": "Taman Greenview",
+    "alt_name:ms": "Taman Hijau",
+    "name": "Taman Green View",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10166429413,
+  "lat": 5.9657350,
+  "lon": 116.1063427,
+  "tags": {
+    "name": "Taman Utama",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10166437420,
+  "lat": 5.9658977,
+  "lon": 116.1074504,
+  "tags": {
+    "name": "Taman Bunga Raya Phase II",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10179179023,
+  "lat": 5.9601675,
+  "lon": 116.0885060,
+  "tags": {
+    "name": "Damai Plaza",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10179193619,
+  "lat": 6.0022330,
+  "lon": 116.1174390,
+  "tags": {
+    "name": "Taman Kemajuan",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10180362278,
+  "lat": 6.0037588,
+  "lon": 116.1175141,
+  "tags": {
+    "alt_name": "Kampung Tanpa Sampah; Kampung cenderamata 2",
+    "name": "Kampung Cenderamata Dua",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10208530123,
+  "lat": 5.9445865,
+  "lon": 116.0791920,
+  "tags": {
+    "admin_level": "10",
+    "name": "Taman Sutera",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10219327014,
+  "lat": 6.0466745,
+  "lon": 116.1259121,
+  "tags": {
+    "admin_level": "10",
+    "name": "Kampung E",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10222706905,
+  "lat": 6.0243295,
+  "lon": 116.1601022,
+  "tags": {
+    "admin_level": "10",
+    "name": "Taman Sungai Mas",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10230165687,
+  "lat": 5.9669435,
+  "lon": 116.1035907,
+  "tags": {
+    "alt_name": "Taman Bunga Raya Phase I",
+    "name": "Taman Bunga Raja Phase 1",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10236550386,
+  "lat": 5.9689335,
+  "lon": 116.1073136,
+  "tags": {
+    "name": "Taman Aman",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10236550387,
+  "lat": 5.9679999,
+  "lon": 116.1067933,
+  "tags": {
+    "alt_name": "Taman Bunga Raya Phase II",
+    "name": "Taman Bunga Raja Phase 2",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10237459796,
+  "lat": 5.9709983,
+  "lon": 116.1065090,
+  "tags": {
+    "name": "Taman Amansutra Phase 1",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10237485613,
+  "lat": 5.9712091,
+  "lon": 116.1055836,
+  "tags": {
+    "name": "Taman Amansutra Phase 2",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10239254613,
+  "lat": 5.9707049,
+  "lon": 116.1038268,
+  "tags": {
+    "name": "Taman Seri Manis",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10241485437,
+  "lat": 5.9768818,
+  "lon": 116.0981257,
+  "tags": {
+    "name": "Taman Happy Garden",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10247800815,
+  "lat": 5.9766004,
+  "lon": 116.0910407,
+  "tags": {
+    "alt_name": "Taman Yakim Jaya",
+    "name": "Taman Yakim Jaya",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10247800816,
+  "lat": 5.9773260,
+  "lon": 116.0932374,
+  "tags": {
+    "name": "Taman Tuaran",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10247800817,
+  "lat": 5.9774300,
+  "lon": 116.0947502,
+  "tags": {
+    "name": "Taman Orchid Villa",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10248364865,
+  "lat": 5.9754399,
+  "lon": 116.0905793,
+  "tags": {
+    "name": "Taman Sinar",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10250695230,
+  "lat": 5.9768965,
+  "lon": 116.0877684,
+  "tags": {
+    "name": "Voluntary Association Complex",
+    "name:ms": "Badan Sukarela Complex",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10255282985,
+  "lat": 5.9547841,
+  "lon": 116.1080861,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Bukit Padang",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10262073737,
+  "lat": 5.9489257,
+  "lon": 116.1086547,
+  "tags": {
+    "name": "Taman Tun Fuad Stephens",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10263904290,
+  "lat": 5.9605810,
+  "lon": 116.1077294,
+  "tags": {
+    "name": "Taman Khidmat",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10268983129,
+  "lat": 5.9440063,
+  "lon": 116.1193192,
+  "tags": {
+    "name": "Taman Sri Cassia",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10268983170,
+  "lat": 5.9437289,
+  "lon": 116.1210680,
+  "tags": {
+    "designation": "Kampung",
+    "name": "Minintod",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10269730362,
+  "lat": 5.9642731,
+  "lon": 116.0880594,
+  "tags": {
+    "designation": "Taman",
+    "name": "Taman Seputeh",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10270682753,
+  "lat": 5.9647986,
+  "lon": 116.0873473,
+  "tags": {
+    "designation": "Taman",
+    "name": "Taman Legenda Damai",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10270682795,
+  "lat": 5.9629739,
+  "lon": 116.0876530,
+  "tags": {
+    "designation": "Taman",
+    "name": "Taman Friendly Phase 3",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10270682822,
+  "lat": 5.9751759,
+  "lon": 116.0692906,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Api-Api Centre",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10270682823,
+  "lat": 5.9358749,
+  "lon": 116.0673379,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Lido",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10270682824,
+  "lat": 5.9238375,
+  "lon": 116.0585403,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Kepayan",
+    "name:en": "Kepayan",
+    "name:ms": "Kepayan",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10270682825,
+  "lat": 5.9429606,
+  "lon": 116.0786247,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Lintas",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10270682826,
+  "lat": 5.9832534,
+  "lon": 116.1184930,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Kolombong",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10270682827,
+  "lat": 5.9708543,
+  "lon": 116.0746550,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Karamunsing",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10270682828,
+  "lat": 5.9697232,
+  "lon": 116.0903835,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Damai",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10270682829,
+  "lat": 5.9607598,
+  "lon": 116.0896432,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Luyang",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10274584330,
+  "lat": 5.9626672,
+  "lon": 116.0905096,
+  "tags": {
+    "designation": "Taman",
+    "name": "Taman Damai Plaza Phase IV",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10279095607,
+  "lat": 5.9508224,
+  "lon": 116.1023033,
+  "tags": {
+    "name": "Taman Rafflesia",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10279122348,
+  "lat": 5.9499127,
+  "lon": 116.1002970,
+  "tags": {
+    "name": "Taman Bukit Warisan",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10279122349,
+  "lat": 5.9513160,
+  "lon": 116.1002219,
+  "tags": {
+    "name": "Taman Soon Kiong",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10279517102,
+  "lat": 5.9672262,
+  "lon": 116.0680273,
+  "tags": {
+    "name": "Kampung Setinggan Sembulan",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10279517103,
+  "lat": 5.9667140,
+  "lon": 116.0687301,
+  "tags": {
+    "name": "Kampung Sembulan Lama",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 10308242991,
+  "lat": 5.9668207,
+  "lon": 116.0720278,
+  "tags": {
+    "name": "Sadong Jaya",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10308433684,
+  "lat": 5.9494886,
+  "lon": 116.0603562,
+  "tags": {
+    "name": "Aeropod Commercial Square",
+    "name:en": "Aeropod Commercial Square",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10537489497,
+  "lat": 5.9612105,
+  "lon": 116.0885879,
+  "tags": {
+    "description": "The Luyang Commercial Centre includes Damai Plaza Phase I to IV and Damai Point (all 5 belong to the Commercial Centre)",
+    "name": "Luyang Commercial Centre",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 10553258971,
+  "lat": 5.9469302,
+  "lon": 116.1034512,
+  "tags": {
+    "admin_level": "10",
+    "designation": "kampung",
+    "name": "Bundusan",
+    "place": "village"
+  }
+},
+{
+  "type": "node",
+  "id": 11189437358,
+  "lat": 6.0197922,
+  "lon": 116.1611032,
+  "tags": {
+    "name": "Taman Bukit Damaisari",
+    "place": "neighbourhood",
+    "source": "local knowledge"
+  }
+},
+{
+  "type": "node",
+  "id": 12451314335,
+  "lat": 5.9800983,
+  "lon": 116.1662083,
+  "tags": {
+    "name": "Taman Seri Kiansom",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 12451356449,
+  "lat": 5.9098272,
+  "lon": 116.1255095,
+  "tags": {
+    "name": "Vista Seri Kiranau",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 12452535291,
+  "lat": 5.9261920,
+  "lon": 116.0850719,
+  "tags": {
+    "name": "Kampung Nosoob Baru",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 12452617225,
+  "lat": 5.9342831,
+  "lon": 116.0755971,
+  "tags": {
+    "name": "Taman Kobusak Jaya",
+    "place": "neighbourhood"
+  }
+}
+
+  ]
+}

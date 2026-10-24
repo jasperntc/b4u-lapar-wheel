@@ -11,7 +11,9 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "preview": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "data:pull": "npm --prefix scripts/data ci && node scripts/data/pull.mjs",
+    "data:compare": "node scripts/data/compare.ts"
   },
   "dependencies": {
     "next": "16.4.2",
