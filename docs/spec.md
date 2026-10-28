@@ -64,7 +64,21 @@ type Certified = {
 7. Test on my phone, then film with friends.
 
 ## Logins and hosting
-No logins and no stored user data. The page lives at `built4you.jasperntc.dev/lapar-wheel` (separate repo, `basePath: /lapar-wheel`, storage keys prefixed `lapar-wheel:`), plus one Cloudflare Worker route for the API. See [[domains]].
+No logins and no stored user data. The page lives at `built4you.jasperntc.dev/lapar-wheel` (separate repo, `basePath: /lapar-wheel`, storage keys prefixed `lapar-wheel:`), plus one Cloudflare Worker route for the API.
 
 ## Naming
 Keep "makan mana" out of in-app copy and marketing: an existing app uses that name.
+
+## Moments to film
+
+1. The pick: the real wheel spin from 2026-10-13 (already filmed), with a voice-over of the ask. Blur any idea-giver names on the wheel.
+2. Reviewing Claude Code's plan, and pushing back on what it got wrong.
+3. Open data first: the OpenStreetMap and Overture pins, the count, and a place I know is missing from the map.
+4. The pivot to near me: the phone asking for location, setting 2 km, spinning onto a place that's open right now.
+5. Halal: searching MyeHalal for KK, a certificate's expiry date, and the test failing on an entry with no expiry.
+6. Tuning the spin: before and after, tested on my phone.
+7. The first real spin with friends, then eating wherever it lands.
+8. A friend opening the share link and seeing the same pick.
+9. Launch day: handing the phone to Crystal to spin, if she agrees to be filmed and credited.
+10. The hub's Building stamp changing to Shipped.
+11. A "What should I build next?" story with the suggestion sticker.
