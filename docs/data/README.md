@@ -1,5 +1,7 @@
 # Restaurant data
 
+> **Parked on 2026-10-28.** Near me (Places API) is v1, so pruning is paused (see [`docs/spec.md`](../spec.md)). The data in `data/` and the scripts in `scripts/data/` are kept as they are, and every rule below still applies if pruning resumes. This open data now only supplies coordinates for JAKIM-certified places, plus gaps to add to OpenStreetMap later.
+
 How Lapar Wheel's restaurant list is made for the `kota-kinabalu` region. This is PR3a: pull, compare, and a candidates CSV to prune by hand. PR3b merges in `data/manual-kk.csv` and turns the pruned list into `content/restaurants.ts`.
 
 ## Area
