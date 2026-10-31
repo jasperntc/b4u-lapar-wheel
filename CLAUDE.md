@@ -56,8 +56,10 @@ CI runs audit, lint, typecheck, test and build on every PR. Run all of them befo
   - Pro fields only, with no photos. The search field mask is `places.id`, `places.displayName`, `places.location`, `places.primaryType`.
   - The one Enterprise exception is `currentOpeningHours.openNow`, for halal-mode picks only.
   - Share links check `businessStatus` (Pro).
-  - A per-IP rate limit of 10 spins a minute. When it's hit, show "Slow down, try again in a minute."
-  - I set a daily quota cap and a budget alert in Google Cloud. When the quota runs out, show "Lapar Wheel is out of spins for today", and keep halal mode and area mode available where possible.
+  - A per-IP rate limit of 20 requests a minute (friends often share an IP). When it's hit, show "Slow down, try again in a minute."
+  - A hard cap of 150 Google calls a day across both endpoints, reset at midnight Malaysia time. Google's free trial allows no quota, so this counter is the real limit. I keep a budget alert in Google Cloud.
+  - Both limits live in one Durable Object (`worker/limits.ts`), so the counts are exact. The per-IP counts are kept in memory only, never in storage.
+  - When the cap is hit, near me shows "Lapar Wheel is out of spins for today". Halal mode still picks from the certified list by `jakimName`, without the open-now check, labelled "Couldn't check if it's open right now. Check Maps before you go." Share links show only an Open in Maps button (`query=restaurant` beside `query_place_id`).
 - **Area:** greater KK only. Outside the box, show "Lapar Wheel only covers greater Kota Kinabalu for now."
 - **Cuisine:** UI choices map to Google's Table A types: Chinese, Japanese, Korean, Thai, Indian, Indonesian, Seafood, Fast food, Cafe, and Malaysian (`malaysian_restaurant`). There's no Malay type. Never use `halal_restaurant`.
 - **Attribution:** wherever Google results appear without a Google map, show the Google logo (16–19 px high), or the text "Google Maps" if space is tight, in the same container. Never draw Google results on a non-Google map.

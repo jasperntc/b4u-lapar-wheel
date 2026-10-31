@@ -1,4 +1,4 @@
-import { haversineMeters } from "./match.ts";
+import { haversineMeters } from "../../lib/geo.ts";
 
 export type NamedPlace = { name: string; lat: number; lon: number };
 
