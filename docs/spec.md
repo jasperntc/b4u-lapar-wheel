@@ -34,8 +34,10 @@ Won't (v1): logins, live multiplayer rooms, storing any Google data except place
 - No accounts, no stored user data.
 
 ## Cost limits
-- Google Cloud: a daily quota cap on Places API (e.g. 150 requests/day) as the hard stop, plus a budget alert. Budgets only alert; quotas stop.
-- Worker: per-IP rate limit, no photos fetched, Pro fields only. One exception: `currentOpeningHours.openNow` (Enterprise) for halal-mode picks. Share links check `businessStatus` (Pro).
+**Changed 2026-10-31:** Google's free trial doesn't allow quota changes, so the Worker's own counter is the hard stop, and the rate limit is 20 a minute so friends sharing an IP aren't blocked.
+
+- Worker: a hard cap of 150 Google calls a day across both endpoints, counted exactly in a Durable Object and reset at midnight Malaysia time. Google Cloud keeps a budget alert. Budgets only alert; the cap stops.
+- Worker: per-IP rate limit of 20 requests a minute, no photos fetched, Pro fields only. One exception: `currentOpeningHours.openNow` (Enterprise) for halal-mode picks. Share links check `businessStatus` (Pro).
 
 ## Data model
 ```ts

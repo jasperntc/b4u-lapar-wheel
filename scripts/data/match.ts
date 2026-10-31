@@ -2,6 +2,8 @@
 // Rule: within MAX_METERS of each other and names at least MIN_SIMILARITY alike,
 // paired one-to-one, closest pairs first.
 
+import { haversineMeters } from "../../lib/geo.ts";
+
 export const MAX_METERS = 75;
 export const MIN_SIMILARITY = 0.5;
 
@@ -32,14 +34,6 @@ export function nameSimilarity(a: string, b: string): number {
   const common = [...ta].filter((w) => tb.has(w)).length;
   if (common === Math.min(ta.size, tb.size)) return 1;
   return common / new Set([...ta, ...tb]).size;
-}
-
-export function haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const rad = Math.PI / 180;
-  const dLat = (lat2 - lat1) * rad;
-  const dLon = (lon2 - lon1) * rad;
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLon / 2) ** 2;
-  return 2 * 6_371_000 * Math.asin(Math.sqrt(h));
 }
 
 /** One-to-one matches under the rule above, closest pairs first. */

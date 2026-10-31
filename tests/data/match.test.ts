@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { haversineMeters, matchPlaces, nameSimilarity, nameTokens } from "../../scripts/data/match.ts";
+import { matchPlaces, nameSimilarity, nameTokens } from "../../scripts/data/match.ts";
 
 // One metre of latitude is 1 / 111,195 of a degree.
 const at = (id: string, name: string, metersNorth: number) => ({ id, name, lat: 5.98 + metersNorth / 111_195, lon: 116.07 });
@@ -16,12 +16,6 @@ describe("names", () => {
     expect(nameSimilarity("Nasi Lemak Bumbung", "Nasi Kandar Bumbung")).toBe(0.5);
     expect(nameSimilarity("Sri Latha", "Yee Fung")).toBe(0);
     expect(nameSimilarity("Restoran", "Restaurant")).toBe(0);
-  });
-});
-
-describe("haversineMeters", () => {
-  it("measures short distances", () => {
-    expect(haversineMeters(5.98, 116.07, 5.98 + 75 / 111_195, 116.07)).toBeCloseTo(75, 0);
   });
 });
 
