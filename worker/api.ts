@@ -63,7 +63,11 @@ type GooglePlace = {
 export type NearbyQuery = { lat: number; lon: number; radiusKm: number; cuisine?: string; minRating: number | null };
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
-  Response.json(body, { status, headers: { "Cache-Control": "no-store", ...headers } });
+  Response.json(body, {
+    status,
+    // Response.json alone sends no charset, and some clients then misread Chinese names.
+    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...headers },
+  });
 const fail = (error: ApiError, status: number, headers?: Record<string, string>) => json({ error }, status, headers);
 const round3 = (x: number) => Math.round(x * 1000) / 1000;
 

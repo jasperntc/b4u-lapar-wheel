@@ -265,6 +265,41 @@ describe("GET /place/:id", () => {
   });
 });
 
+describe("encoding", () => {
+  const JSON_UTF8 = "application/json; charset=utf-8";
+  const NAME = "亚庇海鲜餐厅";
+  /** Google's reply as raw UTF-8 bytes, the way it arrives on the wire. */
+  const bytes = (body: unknown) =>
+    new Response(new TextEncoder().encode(JSON.stringify(body)), { headers: { "Content-Type": JSON_UTF8 } });
+  /** Our reply decoded strictly as UTF-8, so a mis-encoded byte throws. */
+  const decoded = async (res: Response) =>
+    JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(await res.arrayBuffer()));
+
+  it.each([
+    ["nearby", () => nearby(fakeEnv().env, { ...DAMAI, radiusKm: 1 })],
+    ["place", () => place(fakeEnv().env, "ChIJabc")],
+    ["bad_request", () => nearby(fakeEnv().env, "{lat:")],
+    ["outside_area", () => nearby(fakeEnv().env, { lat: 51.5, lon: -0.12, radiusKm: 1 })],
+    ["method_not_allowed", () => handle(new Request(`${BASE}nearby`), fakeEnv().env)],
+    ["not_found", () => handle(new Request(`${BASE}spin`), fakeEnv().env)],
+  ])("sends %s as JSON in UTF-8", async (_, call) => {
+    expect((await call()).headers.get("Content-Type")).toBe(JSON_UTF8);
+  });
+
+  it("round-trips a Chinese name through /nearby", async () => {
+    google.mockResolvedValue(
+      bytes({ places: [{ id: "cn", displayName: { text: NAME }, location: offset(100, 0), primaryType: "chinese_restaurant" }] }),
+    );
+    const res = await nearby(fakeEnv().env, { ...DAMAI, radiusKm: 1 });
+    expect((await decoded(res))[0].name).toBe(NAME);
+  });
+
+  it("round-trips a Chinese name through /place", async () => {
+    google.mockResolvedValue(bytes({ id: "cn", displayName: { text: NAME }, businessStatus: "OPERATIONAL" }));
+    expect(await decoded(await place(fakeEnv().env, "cn"))).toEqual({ id: "cn", name: NAME, available: true });
+  });
+});
+
 describe("routing", () => {
   it("exports only the handler and the Durable Object from the entry, or workerd refuses to start", () => {
     expect(Object.keys(entry).sort()).toEqual(["Limits", "default"]);
