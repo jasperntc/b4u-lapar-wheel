@@ -93,7 +93,7 @@ Parked on 2026-10-28: see `docs/data/README.md`. The data and scripts stay. The 
 ## Spins
 
 - The pick is uniform over the filtered list. It uses `pickIndex` (`crypto.getRandomValues` with rejection sampling), so there is no modulo bias. Never use `Math.random`.
-- `pickIndex` is mine to hand-code, as step 5 of the spec's build order. Don't write its body.
+- Rush mode from 2026-10-31: Claude Code wrote `pickIndex` (`lib/pick.ts`), with tests, instead of my hand-coding it. `lib/filter.ts` is still mine to hand-code.
 - Pick first, then animate. The animation is computed from the picked index and always lands on it. It never decides the result.
 - Respect `prefers-reduced-motion` with a short or no animation that still shows the same pick.
 

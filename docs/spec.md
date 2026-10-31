@@ -61,7 +61,7 @@ type Certified = {
 2. Google Cloud setup (me): project, Places API (New), server key restricted to Places API, budget alert. The free trial allows no quota, so the Worker's daily cap is the limit.
 3. Worker PR: `POST /lapar-wheel/api/nearby` and `GET /lapar-wheel/api/place/:id`, rate limit, no logging of location, key as a secret.
 4. JAKIM list: certified premises for KK, Penampang and Putatan from MyeHalal, matched to place IDs, with expiry.
-5. `pickIndex` hand-coding session.
+5. `pickIndex`: written by Claude Code in rush mode, 2026-10-31 (`lib/pick.ts`).
 6. Wheel UI: location flow and area fallback, filters, spin, result card, share link, attribution.
 7. Test on my phone, then film with friends.
 
