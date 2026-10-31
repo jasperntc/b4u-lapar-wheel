@@ -11,7 +11,7 @@
 //
 // Privacy: the location is rounded to 3 decimals on arrival and only ever sent to Google.
 // Nothing here logs: no console calls, and Workers Logs are off in wrangler.jsonc.
-import { haversineMeters } from "../lib/geo.ts";
+import { EARTH_RADIUS_M, haversineMeters } from "../lib/geo.ts";
 import type { LimitResult } from "./limits.ts";
 
 // shortcut: bindings typed by hand, because the root tsconfig's DOM lib clashes with the Workers types;
@@ -111,6 +111,14 @@ async function overLimit(request: Request, env: Env): Promise<Response | null> {
   return result.ok ? null : fail(result.error, 429, { "Retry-After": String(result.retryAfter) });
 }
 
+/** Half the height and width, in degrees, of the smallest box holding every point within `radiusM` of latitude `lat`. */
+export function boxAround(lat: number, radiusM: number) {
+  const deg = 180 / Math.PI;
+  const angle = radiusM / EARTH_RADIUS_M;
+  // The circle is widest slightly poleward of its centre, which asin(sin / cos) accounts for.
+  return { dLat: angle * deg, dLon: Math.asin(Math.sin(angle) / Math.cos(lat / deg)) * deg };
+}
+
 async function nearby(request: Request, env: Env): Promise<Response> {
   const q = parseNearby(await request.text());
   if (!q) return fail("bad_request", 400);
@@ -121,9 +129,9 @@ async function nearby(request: Request, env: Env): Promise<Response> {
   if (limited) return limited;
 
   // Text Search only takes a rectangle, so ask for the box around the circle and trim to the circle below.
+  // The box is exact on the same sphere as haversineMeters, so it never cuts off part of the circle.
   const radiusM = q.radiusKm * 1000;
-  const dLat = radiusM / 111_320;
-  const dLon = radiusM / (111_320 * Math.cos((q.lat * Math.PI) / 180));
+  const { dLat, dLon } = boxAround(q.lat, radiusM);
   const cuisine = q.cuisine === undefined ? undefined : CUISINES[q.cuisine];
   const res = await fetch(`${PLACES}:searchText`, {
     method: "POST",
