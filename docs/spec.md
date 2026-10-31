@@ -58,7 +58,7 @@ type Certified = {
 
 ## Build order
 1. Planning PR: update `CLAUDE.md` (scope, Google data rules, privacy, cost limits) and this spec in `docs/`.
-2. Google Cloud setup (me): project, Places API (New), server key restricted to Places API, daily quota cap, budget alert.
+2. Google Cloud setup (me): project, Places API (New), server key restricted to Places API, budget alert. The free trial allows no quota, so the Worker's daily cap is the limit.
 3. Worker PR: `POST /lapar-wheel/api/nearby` and `GET /lapar-wheel/api/place/:id`, rate limit, no logging of location, key as a secret.
 4. JAKIM list: certified premises for KK, Penampang and Putatan from MyeHalal, matched to place IDs, with expiry.
 5. `pickIndex` hand-coding session.
