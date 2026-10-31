@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CUISINES, DETAILS_FIELDS, handle, SEARCH_FIELDS, type Env } from "../../worker/api.ts";
+import { EARTH_RADIUS_M, haversineMeters } from "../../lib/geo.ts";
+import { boxAround, CUISINES, DETAILS_FIELDS, handle, KK_BOX, SEARCH_FIELDS, type Env } from "../../worker/api.ts";
 import * as entry from "../../worker/index.ts";
 import { DAILY_CAP, malaysiaDay, RATE_LIMIT } from "../../worker/limits.ts";
 import { fakeEnv } from "./fake-env.ts";
@@ -176,6 +177,70 @@ describe("POST /nearby response", () => {
     const res = await nearby(fakeEnv().env, { ...DAMAI, radiusKm: 1 });
     expect(res.status).toBe(502);
     expect(await res.text()).toBe('{"error":"upstream"}');
+  });
+});
+
+describe("POST /nearby radius", () => {
+  const RADII = [1, 2, 5, 10];
+  /** The point `meters` from (lat, lon) on `bearing` degrees, on the same sphere as haversineMeters. */
+  const destination = (lat: number, lon: number, bearing: number, meters: number) => {
+    const rad = Math.PI / 180;
+    const a = meters / EARTH_RADIUS_M;
+    const [p1, l1, b] = [lat * rad, lon * rad, bearing * rad];
+    const p2 = Math.asin(Math.sin(p1) * Math.cos(a) + Math.cos(p1) * Math.sin(a) * Math.cos(b));
+    const l2 = l1 + Math.atan2(Math.sin(b) * Math.sin(a) * Math.cos(p1), Math.cos(a) - Math.sin(p1) * Math.sin(p2));
+    return { latitude: p2 / rad, longitude: l2 / rad };
+  };
+
+  it.each([
+    ["Damai", DAMAI.lat],
+    ["the box's south edge", KK_BOX.south],
+    ["the box's north edge", KK_BOX.north],
+  ])("asks Google for a rectangle that holds the whole circle at every radius, at %s", async (_, lat) => {
+    for (const radiusKm of RADII) {
+      google.mockClear();
+      await nearby(fakeEnv().env, { lat, lon: DAMAI.lon, radiusKm, minRating: null });
+      const { low, high } = sent().locationRestriction.rectangle;
+      for (let bearing = 0; bearing < 360; bearing += 0.5) {
+        const p = destination(lat, DAMAI.lon, bearing, radiusKm * 1000 * (1 - 1e-9));
+        expect(p.latitude).toBeGreaterThanOrEqual(low.latitude);
+        expect(p.latitude).toBeLessThanOrEqual(high.latitude);
+        expect(p.longitude).toBeGreaterThanOrEqual(low.longitude);
+        expect(p.longitude).toBeLessThanOrEqual(high.longitude);
+      }
+    }
+  });
+
+  it("asks for no more than the circle needs: the box's edges are the radius away", () => {
+    for (const radiusKm of RADII) {
+      const { dLat } = boxAround(DAMAI.lat, radiusKm * 1000);
+      expect(haversineMeters(DAMAI.lat, DAMAI.lon, DAMAI.lat + dLat, DAMAI.lon)).toBeCloseTo(radiusKm * 1000, 3);
+    }
+  });
+
+  it("never returns fewer places for a larger radius, given the same Google reply", async () => {
+    // Places from 50 m to 12 km out on every bearing, including just inside and outside each radius.
+    const distances = [50, 400, 999, 1001, 1500, 1999, 2001, 3500, 4999, 5001, 7500, 9999, 10_001, 12_000];
+    const places = distances.flatMap((m, i) =>
+      [0, 45, 90, 135, 180, 225, 270, 315].map((bearing) => ({
+        id: `p${i}-${bearing}`,
+        displayName: { text: `${m} m at ${bearing}°` },
+        location: destination(DAMAI.lat, DAMAI.lon, bearing + i, m),
+        primaryType: "japanese_restaurant",
+      })),
+    );
+    const ids: string[][] = [];
+    for (const radiusKm of RADII) {
+      google.mockImplementation(async () => Response.json({ places }));
+      const res = await nearby(fakeEnv().env, { ...DAMAI, radiusKm, cuisine: "japanese" });
+      ids.push((await res.json()).map((p: { id: string }) => p.id));
+    }
+    for (let i = 1; i < ids.length; i++) {
+      expect(ids[i].length).toBeGreaterThanOrEqual(ids[i - 1].length);
+      expect(ids[i]).toEqual(expect.arrayContaining(ids[i - 1]));
+    }
+    // And each radius keeps exactly the places within it.
+    expect(ids.map((list) => list.length)).toEqual([3, 6, 9, 12].map((n) => n * 8));
   });
 });
 
