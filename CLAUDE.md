@@ -39,7 +39,7 @@ CI runs audit, lint, typecheck, test and build on every PR. Run all of them befo
 
 - **Scope:** places come live from the Google Places API (New) at spin time. It's called only from the Worker, never from the browser.
 - **Endpoints:** `POST /lapar-wheel/api/nearby`, with the location in the request body, and `GET /lapar-wheel/api/place/:id`.
-- **Key:** the Wrangler secret `GOOGLE_PLACES_API_KEY`, restricted to Places API (New). Locally, a separate development key with a lower quota goes in `.dev.vars`, which is gitignored. The key never sits in the repo or the client.
+- **Key:** the Wrangler secret `GOOGLE_PLACES_API_KEY`, restricted to Places API (New). Locally, a separate development key goes in `.dev.vars`, which is gitignored. Google's free trial allows no quota on either key; `wrangler dev` keeps its own daily cap, separate from production's. The key never sits in the repo or the client.
 - **Google data:**
   - Store only place IDs.
   - Never store names, addresses, hours, ratings or status in the repo, a database or logs.
