@@ -4,6 +4,17 @@ export type Place = { id: string; name: string; lat: number; lon: number; primar
 export type NearbyRequest = { lat: number; lon: number; radiusKm: number; cuisine?: string; minRating?: null };
 export type NearbyResult = { ok: true; places: Place[] } | { ok: false; error: string };
 
+export type SpinCache = { key: string; places: Place[] };
+
+/**
+ * The places to re-pick from without a new Google call, or null to fetch. Only a non-empty result
+ * for the same request is reused: Google sometimes answers an identical search with nothing, so an
+ * empty result must not stick.
+ */
+export function cachedPlaces(cache: SpinCache | null, key: string): Place[] | null {
+  return cache && cache.key === key && cache.places.length ? cache.places : null;
+}
+
 export const RADII_KM = [1, 2, 5, 10] as const;
 export const DEFAULT_RADIUS_KM = 2;
 

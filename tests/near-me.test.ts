@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { WHEEL_COLOURS, WHEEL_TEXT, segmentColour } from "../components/Wheel";
 import { brandToken } from "../lib/brand-tokens";
 import {
+  cachedPlaces,
   CUISINE_LABELS,
   emptyMessage,
   errorMessage,
@@ -68,6 +69,23 @@ describe("messages", () => {
 
   it("offers the Worker's radii", () => {
     expect([...RADII_KM]).toEqual([1, 2, 5, 10]);
+  });
+});
+
+describe("cachedPlaces", () => {
+  const place = { id: "a", name: "A", lat: 5.97, lon: 116.09, primaryType: "restaurant", distanceM: 120 };
+
+  it("reuses a non-empty result for the same request, so Spin again costs no Google call", () => {
+    expect(cachedPlaces({ key: "k", places: [place] }, "k")).toEqual([place]);
+  });
+
+  it("fetches again after an empty result, because Google sometimes answers the same search with nothing", () => {
+    expect(cachedPlaces({ key: "k", places: [] }, "k")).toBeNull();
+  });
+
+  it("fetches when the request changed or nothing was fetched yet", () => {
+    expect(cachedPlaces({ key: "k", places: [place] }, "other")).toBeNull();
+    expect(cachedPlaces(null, "k")).toBeNull();
   });
 });
 

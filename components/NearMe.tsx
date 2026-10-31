@@ -12,9 +12,11 @@ import {
   mapsUrl,
   nextRadius,
   searchNearby,
+  cachedPlaces,
   wheelRotation,
   type NearbyRequest,
   type Place,
+  type SpinCache,
 } from "@/lib/near-me";
 import { pickIndex } from "@/lib/pick";
 import { AreaPicker } from "./AreaPicker";
@@ -60,7 +62,7 @@ export function NearMe() {
   const [notice, setNotice] = useState<Notice | null>(null);
   // Refs, so a second tap in the same tick can't start a second spin.
   const busyRef = useRef(false);
-  const fetchedFor = useRef("");
+  const cache = useRef<SpinCache | null>(null);
   const pending = useRef<Place | null>(null);
 
   async function askLocation(): Promise<Centre | null> {
@@ -107,9 +109,8 @@ export function NearMe() {
       ...(!ratingOn && { minRating: null }),
     };
     const key = JSON.stringify(request);
-    let list = places;
-    // Spin again with the same filters re-picks from the same results, with no new Google call.
-    if (key !== fetchedFor.current) {
+    let list = cachedPlaces(cache.current, key);
+    if (!list) {
       const result = await searchNearby(request, base);
       if (!result.ok) {
         setNotice({ text: errorMessage(result.error), retryRadius: null });
@@ -120,7 +121,7 @@ export function NearMe() {
         return done();
       }
       list = result.places.slice(0, MAX_SEGMENTS);
-      fetchedFor.current = key;
+      cache.current = { key, places: list };
       setPlaces(list);
     }
     if (!list.length) {
