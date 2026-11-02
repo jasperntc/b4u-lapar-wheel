@@ -1,25 +1,19 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { AreaPicker } from "../components/AreaPicker";
-import { areas } from "../content/areas";
-import { KK_BOX } from "../worker/api";
+import { areas, KK_BOX } from "../content/areas";
 
-const render = (refused: boolean) =>
-  renderToStaticMarkup(<AreaPicker areaId="city-centre" onChange={() => {}} refused={refused} />);
+const render = () => renderToStaticMarkup(<AreaPicker areaId="city-centre" onChange={() => {}} />);
 
 describe("AreaPicker", () => {
-  it("shows the fallback when location is refused: the message, every area and the OSM credit", () => {
-    const html = render(true);
-    expect(html).toContain("Couldn’t get your location. Pick an area instead.");
+  it("offers every KK area under its title, with the OSM credit", () => {
+    const html = render();
+    expect(html).toContain("Pick an area in Kota Kinabalu");
     for (const a of areas) expect(html).toContain(`>${a.name}</option>`);
     expect(html).toContain("Area centres © OpenStreetMap contributors");
   });
 
-  it("leaves out the refused message when the location was only outside the area", () => {
-    expect(render(false)).not.toContain("Couldn’t get your location");
-  });
-
-  it("has the 10 spec areas, each inside the Worker's KK box", () => {
+  it("has the 10 spec areas, each inside the KK box", () => {
     expect(areas.map((a) => a.name)).toEqual([
       "City centre",
       "Likas",

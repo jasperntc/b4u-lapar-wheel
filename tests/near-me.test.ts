@@ -10,6 +10,7 @@ import {
   mapsUrl,
   nextRadius,
   RADII_KM,
+  refusedMessage,
   searchNearby,
   wheelRotation,
 } from "../lib/near-me";
@@ -43,14 +44,20 @@ describe("mapsUrl", () => {
 
 describe("messages", () => {
   it.each([
-    ["outside_area", "Lapar Wheel only covers greater Kota Kinabalu for now."],
     ["rate_limited", "Slow down, try again in a minute."],
+    ["ip_daily_cap", "You’ve used today’s spins. Try again tomorrow."],
     ["daily_cap", "Lapar Wheel is out of spins for today."],
     ["upstream", "Something went wrong, try again."],
     ["bad_request", "Something went wrong, try again."],
+    ["outside_area", "Something went wrong, try again."],
     ["toString", "Something went wrong, try again."],
   ])("%s reads %s", (code, text) => {
     expect(errorMessage(code)).toBe(text);
+  });
+
+  it("offers the KK area picker on refusal only when we don't know the user is elsewhere", () => {
+    expect(refusedMessage(false)).toBe("Allow location to spin near you, or pick an area in Kota Kinabalu.");
+    expect(refusedMessage(true)).toBe("Allow location to spin near you.");
   });
 
   it("suggests the next radius up when nothing is open", () => {

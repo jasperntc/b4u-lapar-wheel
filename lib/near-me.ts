@@ -34,13 +34,18 @@ export const CUISINE_LABELS: Record<string, string> = {
 };
 
 const MESSAGES: Record<string, string> = {
-  outside_area: "Lapar Wheel only covers greater Kota Kinabalu for now.",
   rate_limited: "Slow down, try again in a minute.",
+  ip_daily_cap: "You’ve used today’s spins. Try again tomorrow.",
   daily_cap: "Lapar Wheel is out of spins for today.",
 };
 
 export function errorMessage(code: string): string {
   return Object.hasOwn(MESSAGES, code) ? MESSAGES[code] : "Something went wrong, try again.";
+}
+
+/** Shown when location is refused. The KK area picker is offered only when we don't know the user is elsewhere. */
+export function refusedMessage(outsideKK: boolean): string {
+  return outsideKK ? "Allow location to spin near you." : "Allow location to spin near you, or pick an area in Kota Kinabalu.";
 }
 
 export function emptyMessage(radiusKm: number): string {

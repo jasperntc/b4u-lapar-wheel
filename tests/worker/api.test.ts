@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EARTH_RADIUS_M, haversineMeters } from "../../lib/geo.ts";
-import { boxAround, CUISINES, DETAILS_FIELDS, handle, KK_BOX, SEARCH_FIELDS, type Env } from "../../worker/api.ts";
+import { KK_BOX } from "../../content/areas.ts";
+import { CUISINES, DETAILS_FIELDS, handle, rectangleAround, SEARCH_FIELDS, type Env } from "../../worker/api.ts";
 import * as entry from "../../worker/index.ts";
-import { DAILY_CAP, malaysiaDay, RATE_LIMIT } from "../../worker/limits.ts";
+import { DAILY_CAP, IP_DAILY_CAP, malaysiaDay, RATE_LIMIT } from "../../worker/limits.ts";
 import { fakeEnv } from "./fake-env.ts";
 
 // Mocked fetch only: no test ever reaches Google.
@@ -50,6 +51,10 @@ describe("POST /nearby input", () => {
     ["a rating off the 0.5 steps", { ...DAMAI, radiusKm: 2, minRating: 4.2 }],
     ["a rating above 5", { ...DAMAI, radiusKm: 2, minRating: 5.5 }],
     ["a body over 1 KB", { ...DAMAI, radiusKm: 2, pad: "x".repeat(1024) }],
+    ["a latitude above 90", { lat: 90.5, lon: 0, radiusKm: 2 }],
+    ["a latitude below -90", { lat: -91, lon: 0, radiusKm: 2 }],
+    ["a longitude above 180", { lat: 0, lon: 180.1, radiusKm: 2 }],
+    ["a longitude below -180", { lat: 0, lon: -181, radiusKm: 2 }],
   ])("rejects %s without calling Google", async (_, body) => {
     const res = await nearby(fakeEnv().env, body);
     expect(res.status).toBe(400);
@@ -59,13 +64,16 @@ describe("POST /nearby input", () => {
 
   it.each([
     ["London", { lat: 51.5, lon: -0.12 }],
-    ["Kudat", { lat: 6.88, lon: 116.85 }],
-    ["just west of the box", { lat: 5.95, lon: 116.03 }],
-  ])("rejects a location in %s as outside_area, without calling Google", async (_, at) => {
+    ["Taipei", { lat: 25.033, lon: 121.565 }],
+    ["Kudat, outside greater KK", { lat: 6.88, lon: 116.85 }],
+    ["the north pole", { lat: 90, lon: 0 }],
+    ["the south pole", { lat: -90, lon: 0 }],
+    ["longitude 180", { lat: 0, lon: 180 }],
+    ["longitude -180", { lat: 0, lon: -180 }],
+  ])("searches anywhere: %s", async (_, at) => {
     const res = await nearby(fakeEnv().env, { ...at, radiusKm: 2 });
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "outside_area" });
-    expect(google).not.toHaveBeenCalled();
+    expect(res.status).toBe(200);
+    expect(google).toHaveBeenCalledTimes(1);
   });
 
   it("only allows POST", async () => {
@@ -192,30 +200,91 @@ describe("POST /nearby radius", () => {
     return { latitude: p2 / rad, longitude: l2 / rad };
   };
 
+  /** Whether a longitude falls in Google's range, which wraps across 180 degrees when low > high. */
+  const inLongitudes = (lon: number, low: number, high: number) => {
+    const x = ((((lon + 180) % 360) + 360) % 360) - 180;
+    return low <= high ? x >= low && x <= high : x >= low || x <= high;
+  };
+
   it.each([
-    ["Damai", DAMAI.lat],
-    ["the box's south edge", KK_BOX.south],
-    ["the box's north edge", KK_BOX.north],
-  ])("asks Google for a rectangle that holds the whole circle at every radius, at %s", async (_, lat) => {
+    ["Damai", DAMAI.lat, DAMAI.lon],
+    ["KK's south edge", KK_BOX.south, DAMAI.lon],
+    ["KK's north edge", KK_BOX.north, DAMAI.lon],
+    ["Taipei", 25.033, 121.565],
+    ["latitude 80", 80, 15],
+    ["the date line, in Fiji", -16.5, 179.99],
+    ["the date line, from the west", 65, -179.995],
+  ])("asks Google for a rectangle that holds the whole circle at every radius, at %s", async (_, lat, lon) => {
     for (const radiusKm of RADII) {
       google.mockClear();
-      await nearby(fakeEnv().env, { lat, lon: DAMAI.lon, radiusKm, minRating: null });
+      await nearby(fakeEnv().env, { lat, lon, radiusKm, minRating: null });
       const { low, high } = sent().locationRestriction.rectangle;
+      for (const corner of [low, high]) {
+        expect(Math.abs(corner.latitude)).toBeLessThanOrEqual(90);
+        expect(Math.abs(corner.longitude)).toBeLessThanOrEqual(180);
+      }
       for (let bearing = 0; bearing < 360; bearing += 0.5) {
-        const p = destination(lat, DAMAI.lon, bearing, radiusKm * 1000 * (1 - 1e-9));
+        const p = destination(lat, lon, bearing, radiusKm * 1000 * (1 - 1e-9));
         expect(p.latitude).toBeGreaterThanOrEqual(low.latitude);
         expect(p.latitude).toBeLessThanOrEqual(high.latitude);
-        expect(p.longitude).toBeGreaterThanOrEqual(low.longitude);
-        expect(p.longitude).toBeLessThanOrEqual(high.longitude);
+        expect(inLongitudes(p.longitude, low.longitude, high.longitude)).toBe(true);
       }
     }
   });
 
   it("asks for no more than the circle needs: the box's edges are the radius away", () => {
     for (const radiusKm of RADII) {
-      const { dLat } = boxAround(DAMAI.lat, radiusKm * 1000);
-      expect(haversineMeters(DAMAI.lat, DAMAI.lon, DAMAI.lat + dLat, DAMAI.lon)).toBeCloseTo(radiusKm * 1000, 3);
+      const { high } = rectangleAround(DAMAI.lat, DAMAI.lon, radiusKm * 1000);
+      expect(haversineMeters(DAMAI.lat, DAMAI.lon, high.latitude, DAMAI.lon)).toBeCloseTo(radiusKm * 1000, 3);
     }
+  });
+
+  it("wraps across the date line instead of producing an invalid box", () => {
+    const fiji = rectangleAround(-16.5, 179.99, 10_000);
+    expect(fiji.low.longitude).toBeGreaterThan(fiji.high.longitude);
+    expect(fiji.low.longitude).toBeCloseTo(179.896, 3);
+    expect(fiji.high.longitude).toBeCloseTo(-179.916, 3);
+    const clear = rectangleAround(0, 175, 10_000);
+    expect(clear.low.longitude).toBeLessThan(clear.high.longitude);
+  });
+
+  it("returns a place across the date line, with its distance", async () => {
+    const across = { id: "east", displayName: { text: "Across" }, location: { latitude: -16.5, longitude: -179.995 }, primaryType: "restaurant" };
+    google.mockResolvedValue(Response.json({ places: [across] }));
+    const res = await nearby(fakeEnv().env, { lat: -16.5, lon: 179.99, radiusKm: 5 });
+    const [p] = await res.json();
+    expect(p.id).toBe("east");
+    // 0.015 degrees of longitude at 16.5 S is about 1.6 km.
+    expect(p.distanceM).toBeGreaterThan(1_500);
+    expect(p.distanceM).toBeLessThan(1_700);
+  });
+
+  it.each([
+    ["north", 89.995],
+    ["south", -89.995],
+  ])("covers every longitude near the %s pole, with no NaN", async (_, lat) => {
+    await nearby(fakeEnv().env, { lat, lon: 0, radiusKm: 10 });
+    const body = google.mock.calls[0][1]?.body as string;
+    expect(body).not.toMatch(/NaN|null/);
+    const { low, high } = sent().locationRestriction.rectangle;
+    expect([low.longitude, high.longitude]).toEqual([-180, 180]);
+    expect(lat > 0 ? high.latitude : low.latitude).toBe(lat > 0 ? 90 : -90);
+  });
+
+  it("finds places in Taipei, and sends no region code", async () => {
+    google.mockResolvedValue(
+      Response.json({
+        places: [
+          { id: "tp1", displayName: { text: "鼎泰豐" }, location: { latitude: 25.0335, longitude: 121.5645 }, primaryType: "chinese_restaurant" },
+          { id: "far", displayName: { text: "Far" }, location: { latitude: 25.2, longitude: 121.565 }, primaryType: "restaurant" },
+        ],
+      }),
+    );
+    const res = await nearby(fakeEnv().env, { lat: 25.033, lon: 121.565, radiusKm: 2 });
+    expect(res.status).toBe(200);
+    expect((await res.json()).map((p: { id: string }) => p.id)).toEqual(["tp1"]);
+    expect(sent()).not.toHaveProperty("regionCode");
+    expect(sent().languageCode).toBe("en");
   });
 
   it("never returns fewer places for a larger radius, given the same Google reply", async () => {
@@ -253,6 +322,26 @@ describe("limits", () => {
     expect(res.headers.get("Retry-After")).toBe("60");
     expect(await res.json()).toEqual({ error: "rate_limited" });
     expect(google).toHaveBeenCalledTimes(RATE_LIMIT);
+  });
+
+  it(`returns ip_daily_cap after ${IP_DAILY_CAP} Google calls in a day from one IP, without blocking another`, async () => {
+    vi.useFakeTimers({ now: new Date("2026-11-02T04:00:00Z") });
+    try {
+      const { env } = fakeEnv();
+      for (let i = 0; i < IP_DAILY_CAP; i++) {
+        expect((await nearby(env, { ...DAMAI, radiusKm: 1 }, "198.51.100.9")).status).toBe(200);
+        vi.advanceTimersByTime(3_100); // under 20 a minute, so only the daily limit applies
+      }
+      const res = await nearby(env, { ...DAMAI, radiusKm: 1 }, "198.51.100.9");
+      expect(res.status).toBe(429);
+      expect(await res.json()).toEqual({ error: "ip_daily_cap" });
+      // 30 calls 3.1 s apart end at 04:01:33 UTC, 12:01:33 in Malaysia: 11:58:27 to midnight there.
+      expect(res.headers.get("Retry-After")).toBe(String(12 * 3600 - 93));
+      expect(google).toHaveBeenCalledTimes(IP_DAILY_CAP);
+      expect((await nearby(env, { ...DAMAI, radiusKm: 1 }, "198.51.100.10")).status).toBe(200);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("returns daily_cap once today's Google calls are used, on both endpoints", async () => {
@@ -344,7 +433,6 @@ describe("encoding", () => {
     ["nearby", () => nearby(fakeEnv().env, { ...DAMAI, radiusKm: 1 })],
     ["place", () => place(fakeEnv().env, "ChIJabc")],
     ["bad_request", () => nearby(fakeEnv().env, "{lat:")],
-    ["outside_area", () => nearby(fakeEnv().env, { lat: 51.5, lon: -0.12, radiusKm: 1 })],
     ["method_not_allowed", () => handle(new Request(`${BASE}nearby`), fakeEnv().env)],
     ["not_found", () => handle(new Request(`${BASE}spin`), fakeEnv().env)],
   ])("sends %s as JSON in UTF-8", async (_, call) => {

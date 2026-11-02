@@ -1,8 +1,9 @@
-// The one Durable Object: a per-IP rate limit and the daily cap on Google calls.
+// The one Durable Object: per-IP limits (a minute and a day) and the shared daily cap on Google calls.
 // A single instance sees every API request, one at a time, so both counts are exact.
 // A plain class with a fetch handler (no `cloudflare:workers` import), so Vitest can load it in Node.
 
 export const RATE_LIMIT = 20; // requests a minute per IP: friends often share one through CGNAT or Wi-Fi
+export const IP_DAILY_CAP = 30; // Google calls a day per IP, so one person can't use up the shared cap
 export const DAILY_CAP = 150; // Google calls a day, both endpoints together
 const MINUTE = 60_000;
 const DAY = 86_400_000;
@@ -16,11 +17,13 @@ type Storage = {
   put(key: string, value: unknown): Promise<void>;
 };
 
-export type LimitResult = { ok: true } | { ok: false; error: "rate_limited" | "daily_cap"; retryAfter: number };
+export type LimitResult = { ok: true } | { ok: false; error: "rate_limited" | "ip_daily_cap" | "daily_cap"; retryAfter: number };
 
 export class Limits {
   // IP -> request times in the last minute. Memory only: never written to storage.
   private recent = new Map<string, number[]>();
+  // IP -> Google calls today. Memory only too: if the object is evicted, the counts restart, which only ever lets more through.
+  private today = new Map<string, { day: string; count: number }>();
 
   constructor(private state: { storage: Storage }) {}
 
@@ -28,7 +31,7 @@ export class Limits {
     return Response.json(await this.check(request.headers.get("x-client-ip") ?? ""));
   }
 
-  /** Counts one request from `ip` and, if it's allowed, reserves one Google call for today. */
+  /** Counts one request from `ip` and, if it's allowed, reserves one Google call for today, for the IP and overall. */
   async check(ip: string): Promise<LimitResult> {
     const now = Date.now();
     for (const [key, times] of this.recent) {
@@ -43,12 +46,16 @@ export class Limits {
     this.recent.set(ip, [...times, now]);
 
     const day = malaysiaDay(now);
+    const untilMidnight = Math.ceil((DAY - ((now + MALAYSIA) % DAY)) / 1000);
+    for (const [key, used] of this.today) if (used.day !== day) this.today.delete(key);
+    const ipCount = this.today.get(ip)?.count ?? 0;
+    if (ipCount >= IP_DAILY_CAP) return { ok: false, error: "ip_daily_cap", retryAfter: untilMidnight };
+
     const saved = await this.state.storage.get<{ day: string; count: number }>("cap");
     const count = saved?.day === day ? saved.count : 0;
-    if (count >= DAILY_CAP) {
-      return { ok: false, error: "daily_cap", retryAfter: Math.ceil((DAY - ((now + MALAYSIA) % DAY)) / 1000) };
-    }
+    if (count >= DAILY_CAP) return { ok: false, error: "daily_cap", retryAfter: untilMidnight };
     await this.state.storage.put("cap", { day, count: count + 1 });
+    this.today.set(ip, { day, count: ipCount + 1 });
     return { ok: true };
   }
 }

@@ -23,6 +23,13 @@ describe("copy", () => {
     expect(misspelled).toEqual([]);
   });
 
+  it("has no outside_area code or KK-only near me message left: near me works anywhere", () => {
+    const hits = sourceFiles(["worker", "components", "lib", "app"]).filter((f) =>
+      /outside_area|only covers greater Kota Kinabalu/.test(read(f)),
+    );
+    expect(hits).toEqual([]);
+  });
+
   it("never says makan mana", () => {
     expect(MAKAN_MANA.test("Makan-mana")).toBe(true);
     const hits = sourceFiles(COPY_DIRS).filter((f) => MAKAN_MANA.test(read(f)));

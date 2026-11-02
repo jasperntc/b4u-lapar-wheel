@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { areas } from "@/content/areas";
+import { areas, KK_BOX } from "@/content/areas";
 import {
   CUISINE_LABELS,
   DEFAULT_RADIUS_KM,
@@ -11,6 +11,7 @@ import {
   formatDistance,
   mapsUrl,
   nextRadius,
+  refusedMessage,
   searchNearby,
   cachedPlaces,
   wheelRotation,
@@ -33,6 +34,9 @@ const label = "rounded-sm border border-label-edge bg-surface-label p-4 shadow-l
 const chip =
   "cursor-pointer rounded-md border-2 border-stamp px-4 py-2 text-button text-stamp has-checked:bg-stamp has-checked:text-on-stamp has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus";
 
+const insideKK = ({ lat, lon }: Centre) =>
+  lat >= KK_BOX.south && lat <= KK_BOX.north && lon >= KK_BOX.west && lon <= KK_BOX.east;
+
 /** Asks for the location only when called. Refused, unavailable or timed out all give null. */
 function locate(): Promise<Centre | null> {
   return new Promise((resolve) => {
@@ -51,6 +55,8 @@ export function NearMe() {
   const [here, setHere] = useState<Centre | null>(null);
   const [areaId, setAreaId] = useState(areas[0].id);
   const [refused, setRefused] = useState(false);
+  // Only an earlier fix this visit tells us; we never guess from anything else.
+  const [outsideKK, setOutsideKK] = useState(false);
   const [locating, setLocating] = useState(false);
   const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
   const [cuisine, setCuisine] = useState("");
@@ -73,8 +79,10 @@ export function NearMe() {
       setHere(found);
       setMode("here");
       setRefused(false);
+      setOutsideKK(!insideKK(found));
     } else {
-      setMode("area");
+      // The KK area picker is no use to someone we know is elsewhere: the next spin asks for location again.
+      setMode(outsideKK ? "unset" : "area");
       setRefused(true);
     }
     return found;
@@ -114,10 +122,6 @@ export function NearMe() {
       const result = await searchNearby(request, base);
       if (!result.ok) {
         setNotice({ text: errorMessage(result.error), retryRadius: null });
-        if (result.error === "outside_area" && mode !== "area") {
-          setMode("area");
-          setRefused(false);
-        }
         return done();
       }
       list = result.places.slice(0, MAX_SEGMENTS);
@@ -197,7 +201,8 @@ export function NearMe() {
             </Button>
             {mode === "here" && <p>Using your location.</p>}
           </div>
-          {mode === "area" && <AreaPicker areaId={areaId} onChange={setAreaId} refused={refused} />}
+          {refused && <p className="mt-4">{refusedMessage(outsideKK)}</p>}
+          {mode === "area" && <AreaPicker areaId={areaId} onChange={setAreaId} />}
           <p className="mt-4 text-body-sm text-ink-soft">Your location is only used for this search. It’s never stored.</p>
 
           <fieldset className="mt-6">

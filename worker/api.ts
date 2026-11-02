@@ -2,11 +2,12 @@
 // /lapar-wheel/api/*; every other path is served from static assets.
 //
 // POST /lapar-wheel/api/nearby
-//   Body: { lat, lon, radiusKm: 1|2|5|10, cuisine?, minRating? }. minRating: absent = 4, null = off, else 0–5 in 0.5 steps.
+//   Body: { lat, lon, radiusKm: 1|2|5|10, cuisine?, minRating? }. Anywhere on Earth: lat −90 to 90, lon −180 to 180.
+//   minRating: absent = 4, null = off, else 0–5 in 0.5 steps.
 //   200: [{ id, name, lat, lon, primaryType, distanceM }], open now, within the circle.
 // GET /lapar-wheel/api/place/:id?check=status|openNow (default status)
 //   200: { id, name, available }. name is null and available false when Google doesn't know the place.
-// Errors: { error } with 400 bad_request | outside_area, 429 rate_limited | daily_cap (with Retry-After),
+// Errors: { error } with 400 bad_request, 429 rate_limited | ip_daily_cap | daily_cap (with Retry-After),
 // 502 upstream, 404 not_found, 405 method_not_allowed. Every response is no-store.
 //
 // Privacy: the location is rounded to 3 decimals on arrival and only ever sent to Google.
@@ -31,8 +32,6 @@ export const DETAILS_FIELDS = {
   openNow: "id,displayName,currentOpeningHours.openNow", // Enterprise, for halal picks only
 } as const;
 
-/** Greater Kota Kinabalu: the same box as the data pull (docs/data/README.md). */
-export const KK_BOX = { south: 5.865, west: 116.035, north: 6.05, east: 116.175 };
 const RADII_KM = [1, 2, 5, 10];
 const DEFAULT_MIN_RATING = 4;
 const PLACE_ID = /^[A-Za-z0-9_-]{1,512}$/;
@@ -51,7 +50,7 @@ export const CUISINES: Record<string, { type: string; query: string }> = {
   malaysian: { type: "malaysian_restaurant", query: "malaysian restaurant" },
 };
 
-type ApiError = "bad_request" | "outside_area" | "rate_limited" | "daily_cap" | "upstream" | "not_found" | "method_not_allowed";
+type ApiError = "bad_request" | "rate_limited" | "ip_daily_cap" | "daily_cap" | "upstream" | "not_found" | "method_not_allowed";
 type GooglePlace = {
   id?: string;
   displayName?: { text?: string };
@@ -95,6 +94,7 @@ export function parseNearby(text: string): NearbyQuery | null {
   if (typeof body !== "object" || body === null) return null;
   const { lat, lon, radiusKm, cuisine, minRating = DEFAULT_MIN_RATING } = body as Record<string, unknown>;
   if (typeof lat !== "number" || typeof lon !== "number" || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
   if (typeof radiusKm !== "number" || !RADII_KM.includes(radiusKm)) return null;
   if (cuisine !== undefined && (typeof cuisine !== "string" || !Object.hasOwn(CUISINES, cuisine))) return null;
   if (minRating !== null && (typeof minRating !== "number" || minRating < 0 || minRating > 5 || !Number.isInteger(minRating * 2))) {
@@ -111,27 +111,33 @@ async function overLimit(request: Request, env: Env): Promise<Response | null> {
   return result.ok ? null : fail(result.error, 429, { "Retry-After": String(result.retryAfter) });
 }
 
-/** Half the height and width, in degrees, of the smallest box holding every point within `radiusM` of latitude `lat`. */
-export function boxAround(lat: number, radiusM: number) {
+type LatLng = { latitude: number; longitude: number };
+
+/**
+ * The smallest Text Search rectangle holding every point within `radiusM` of (lat, lon), on the same sphere
+ * as haversineMeters. Across the 180° line, low.longitude > high.longitude, which Google reads as crossing it.
+ */
+export function rectangleAround(lat: number, lon: number, radiusM: number): { low: LatLng; high: LatLng } {
   const deg = 180 / Math.PI;
-  const angle = radiusM / EARTH_RADIUS_M;
+  const dLat = (radiusM / EARTH_RADIUS_M) * deg;
+  const south = Math.max(lat - dLat, -90);
+  const north = Math.min(lat + dLat, 90);
+  // A circle that reaches a pole spans every longitude (and asin below would get a value over 1).
+  if (Math.abs(lat) + dLat >= 90) return { low: { latitude: south, longitude: -180 }, high: { latitude: north, longitude: 180 } };
   // The circle is widest slightly poleward of its centre, which asin(sin / cos) accounts for.
-  return { dLat: angle * deg, dLon: Math.asin(Math.sin(angle) / Math.cos(lat / deg)) * deg };
+  const dLon = Math.asin(Math.sin(dLat / deg) / Math.cos(lat / deg)) * deg;
+  const wrap = (x: number) => (x > 180 ? x - 360 : x < -180 ? x + 360 : x);
+  return { low: { latitude: south, longitude: wrap(lon - dLon) }, high: { latitude: north, longitude: wrap(lon + dLon) } };
 }
 
 async function nearby(request: Request, env: Env): Promise<Response> {
   const q = parseNearby(await request.text());
   if (!q) return fail("bad_request", 400);
-  if (q.lat < KK_BOX.south || q.lat > KK_BOX.north || q.lon < KK_BOX.west || q.lon > KK_BOX.east) {
-    return fail("outside_area", 400);
-  }
   const limited = await overLimit(request, env);
   if (limited) return limited;
 
   // Text Search only takes a rectangle, so ask for the box around the circle and trim to the circle below.
-  // The box is exact on the same sphere as haversineMeters, so it never cuts off part of the circle.
   const radiusM = q.radiusKm * 1000;
-  const { dLat, dLon } = boxAround(q.lat, radiusM);
   const cuisine = q.cuisine === undefined ? undefined : CUISINES[q.cuisine];
   const res = await fetch(`${PLACES}:searchText`, {
     method: "POST",
@@ -146,14 +152,8 @@ async function nearby(request: Request, env: Env): Promise<Response> {
       openNow: true,
       ...(q.minRating === null ? {} : { minRating: q.minRating }),
       pageSize: 20,
-      locationRestriction: {
-        rectangle: {
-          low: { latitude: q.lat - dLat, longitude: q.lon - dLon },
-          high: { latitude: q.lat + dLat, longitude: q.lon + dLon },
-        },
-      },
+      locationRestriction: { rectangle: rectangleAround(q.lat, q.lon, radiusM) },
       languageCode: "en",
-      regionCode: "my",
     }),
   });
   const data = res.ok ? ((await res.json().catch(() => null)) as { places?: GooglePlace[] } | null) : null;
