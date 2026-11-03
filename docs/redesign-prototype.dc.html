@@ -1,0 +1,360 @@
+<!-- Reference only: the design-canvas source of the Lapar Wheel spin prototype (2026-11-04). Not runnable in this repo. See docs/redesign.md. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lapar Wheel: spin prototype</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&amp;family=Figtree:wght@400;600;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid #ffd23f;outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+.wall-day{background-color:#f7f8f4;background-image:url(/_blob/f96fe10093ee93d8f161cf5b17b20417),url(/_blob/e66b74ae90bee15ea6cd6c0bbb9fe3d6);background-repeat:repeat-x,repeat;background-position:left bottom,left top}
+.wall-night{background-color:#1a1530;background-image:radial-gradient(circle at 50% 38%,rgba(255,154,60,0.18),transparent 62%)}
+.awning-day{background:url(/_blob/6790837f78e6fd481888e5adf2e3ea32) repeat-x left top}
+.awning-night{background:url(/_blob/9336c8b7e73cc28235de81cfe95b6771) repeat-x left top}
+.sign-day{background:#1f6b4a url(/_blob/9975554bce7ab9dafc24ec28e93522ac) 0 0/100% 100% no-repeat}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="{{rootStyle}}">
+<svg aria-hidden="true" width="0" height="0" style="position: absolute">
+<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix></filter>
+<filter id="paint"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="t"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="t" scale="2.2"></feDisplacementMap></filter>
+</svg>
+<svg aria-hidden="true" style="{{grainStyle}}"><rect width="100%" height="100%" filter="url(#grain)"></rect></svg>
+<div aria-hidden="true" class="{{awningClass}}" style="position: relative; height: 44px"></div>
+<div aria-hidden="true" style="position: relative; height: 15px; display: flex; justify-content: space-between; align-items: flex-start; padding: 2px 14px 0">
+<sc-for list="{{lights}}" as="b" hint-placeholder-count="13">
+<span style="{{lampStyle}}"></span>
+</sc-for>
+</div>
+<div style="position: relative; padding: 12px 16px 60px; display: flex; flex-direction: column; gap: 14px; flex-grow: 1">
+<div style="height: 96px; display: flex; flex-direction: column; justify-content: center">
+<sc-if value="{{day}}" hint-placeholder-val="{{true}}">
+<header class="sign-day" style="border-radius: 6px; box-shadow: 0 4px 0 #134430">
+<div style="padding: 16px 20px 15px; display: flex; flex-direction: column; align-items: center; gap: 2px">
+<h1 style="margin: 0; font-family: Bungee, Figtree, sans-serif; font-weight: 400; font-size: 32px; line-height: 36px; color: #eef3ec; letter-spacing: 0.02em; filter: url(#paint)">LAPAR WHEEL</h1>
+<p style="margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; color: #eef3ec">Can't decide? Spin, then go makan.</p>
+</div>
+</header>
+</sc-if>
+<sc-if value="{{night}}" hint-placeholder-val="{{false}}">
+<header style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+<h1 style="margin: 0; font-family: Bungee, Figtree, sans-serif; font-weight: 400; font-size: 32px; line-height: 36px; color: #ffe7f0; letter-spacing: 0.02em; text-shadow: 0 0 6px #ff4f8b, 0 0 18px #ff4f8b">LAPAR WHEEL</h1>
+<p style="margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; color: #f3e9d8">Dinner or supper? Spin for what's still open.</p>
+</header>
+</sc-if>
+</div>
+<div style="display: flex; justify-content: center">
+<div style="position: relative; width: 300px; height: 300px">
+<sc-if value="{{day}}" hint-placeholder-val="{{true}}">
+<img src="/_blob/e9331e18816b5db100e073b605826d34" alt="" aria-hidden="true" width="300" height="300" style="{{rimImgStyle}}">
+</sc-if>
+<svg width="300" height="300" viewBox="0 0 300 300" role="img" aria-label="{{wheelLabel}}" style="position: relative; touch-action: none; cursor: grab" onPointerDown="{{down}}" onPointerMove="{{move}}" onPointerUp="{{up}}" onPointerCancel="{{up}}">
+<defs>
+<radialGradient id="sheen" cx="35%" cy="28%" r="70%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"></stop><stop offset="45%" stop-color="#ffffff" stop-opacity="0.06"></stop><stop offset="100%" stop-color="#000000" stop-opacity="0.12"></stop></radialGradient>
+</defs>
+<circle cx="150" cy="150" r="149" fill="{{plate}}" stroke="{{plateEdge}}" stroke-width="2"></circle>
+<g transform="{{wheelTf}}">
+<g transform="{{segScale}}">
+<sc-for list="{{segs}}" as="seg" hint-placeholder-count="12">
+<path d="{{seg.d}}" fill="{{seg.fill}}" stroke="{{segStroke}}" stroke-width="2"></path>
+<text x="{{labelX}}" y="150" transform="{{seg.tf}}" fill="{{seg.ink}}" font-family="Figtree, sans-serif" font-size="{{labelSize}}" font-weight="600" text-anchor="middle" dominant-baseline="middle">{{seg.label}}</text>
+</sc-for>
+</g>
+</g>
+<circle cx="150" cy="150" r="{{rimR}}" fill="url(#sheen)" pointer-events="none"></circle>
+<circle cx="150" cy="150" r="{{rimR}}" fill="none" stroke="{{rim}}" stroke-width="{{rimW}}"></circle>
+<sc-for list="{{bulbs}}" as="b" hint-placeholder-count="0">
+<circle cx="{{b.x}}" cy="{{b.y}}" r="5.5" fill="#ffd98a" opacity="{{b.halo}}"></circle>
+<circle cx="{{b.x}}" cy="{{b.y}}" r="2.6" fill="#fff3cf"></circle>
+</sc-for>
+<circle cx="150" cy="150" r="{{hubR}}" fill="{{hub}}" stroke="{{hubEdge}}" stroke-width="3"></circle>
+<polygon points="{{pointerPts}}" fill="{{pointer}}" stroke="{{segStroke}}" stroke-width="1.5"></polygon>
+</svg>
+</div>
+</div>
+<sc-if value="{{showResult}}" hint-placeholder-val="{{false}}">
+<section aria-live="polite" style="{{cardStyle}}">
+<p style="{{kickerStyle}}">Go makan at</p>
+<h2 style="{{nameStyle}}">{{resultName}}</h2>
+<p style="margin: 0; font-size: 16px; line-height: 22px">{{resultMeta}}</p>
+<a href="#" style="{{mapsStyle}}">Open in Maps</a>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<button type="button" style="{{ghostStyle}}" onClick="{{spin}}">Spin again</button>
+<button type="button" aria-haspopup="dialog" style="{{ghostStyle}}" onClick="{{openSheet}}">Filters</button>
+<button type="button" style="{{ghostStyle}}">Share</button>
+</div>
+</section>
+</sc-if>
+<sc-if value="{{showControls}}" hint-placeholder-val="{{true}}">
+<button type="button" aria-haspopup="dialog" style="{{summaryStyle}}" onClick="{{openSheet}}"><span>{{summaryText}}</span><span style="{{changeStyle}}">Change</span></button>
+<button type="button" style="{{spinStyle}}" onClick="{{spin}}" disabled="{{spinning}}">{{spinText}}</button>
+<p style="margin: 0; text-align: center; font-size: 13px; line-height: 18px">Or swipe the wheel</p>
+</sc-if>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; font-size: 13px; line-height: 18px">
+<div role="group" aria-label="Look" style="display: flex; gap: 4px">
+<sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+<button type="button" aria-pressed="{{m.pressed}}" style="{{m.style}}" onClick="{{m.pick}}">{{m.label}}</button>
+</sc-for>
+</div>
+<button type="button" aria-pressed="{{soundOn}}" style="{{soundStyle}}" onClick="{{toggleSound}}">{{soundText}}</button>
+</div>
+</div>
+<sc-if value="{{sheetOpen}}" hint-placeholder-val="{{false}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(20,16,30,0.55)" onClick="{{closeSheet}}"></div>
+<section role="dialog" aria-modal="true" aria-labelledby="sheet-title" style="{{sheetStyle}}">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<h2 id="sheet-title" style="margin: 0; font-family: Bungee, Figtree, sans-serif; font-weight: 400; font-size: 22px; line-height: 28px">Filters</h2>
+<button type="button" style="{{ghostSmallStyle}}" onClick="{{resetFilters}}">Reset</button>
+</div>
+<div role="radiogroup" aria-labelledby="far" style="display: flex; flex-direction: column; gap: 8px">
+<p id="far" style="margin: 0; font-weight: 800; font-size: 16px; line-height: 22px">How far?</p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{radii}}" as="r" hint-placeholder-count="5">
+<button type="button" role="radio" aria-checked="{{r.checked}}" style="{{r.style}}" onClick="{{r.pick}}">{{r.label}}</button>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 18px">All of KK only shows when you're in greater Kota Kinabalu.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="cuisine" style="font-weight: 800; font-size: 16px; line-height: 22px">What kind?</label>
+<select id="cuisine" value="{{cuisine}}" onChange="{{pickCuisine}}" style="{{selectStyle}}">
+<sc-for list="{{cuisines}}" as="c" hint-placeholder-count="11">
+<option value="{{c}}">{{c}}</option>
+</sc-for>
+</select>
+</div>
+<button type="button" role="switch" aria-checked="{{ratingOn}}" style="{{switchRowStyle}}" onClick="{{toggleRating}}"><span>Rated 4.0 and up</span><span style="{{ratingKnob}}">{{ratingText}}</span></button>
+<button type="button" role="switch" aria-checked="{{halalOn}}" style="{{switchRowStyle}}" onClick="{{toggleHalal}}"><span style="display: flex; flex-direction: column; text-align: left"><span>JAKIM-certified only</span><span style="font-size: 13px; line-height: 18px; font-weight: 400">Greater KK only. Picks from my checked list.</span></span><span style="{{halalKnob}}">{{halalText}}</span></button>
+<button type="button" style="{{doneStyle}}" onClick="{{closeSheet}}">Done</button>
+</section>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+state = { rot: 0, spinning: false, result: null, mode: 'auto', sound: true, sheet: false, radius: '2 km', cuisine: 'Any cuisine', rating: true, halal: false };
+names = ['Kopitiam Sinar', 'Mee Sapi Corner', 'Dim Sum House', 'Satay Lane', 'Pier Seafood', 'Nasi Lemak Hut', 'Ramen Bar', 'Bak Kut Teh 88', 'Tuaran Mee', 'Roti Canai', 'Hinava House', 'Laksa Kitchen'];
+metas = ['Kopitiam, 300 m away. Open now.', 'Noodle shop, 450 m away. Open now.', 'Chinese restaurant, 1.1 km away. Open now.', 'Satay stall, 800 m away. Open now.', 'Seafood restaurant, 650 m away. Open now.', 'Malaysian restaurant, 1.4 km away. Open now.', 'Japanese restaurant, 900 m away. Open now.', 'Chinese restaurant, 1.6 km away. Open now.', 'Noodle shop, 700 m away. Open now.', 'Mamak, 500 m away. Open now.', 'Sabahan restaurant, 1.8 km away. Open now.', 'Noodle shop, 1.2 km away. Open now.'];
+paths = ['M150 150 L150.0 10.0 A140 140 0 0 1 220.0 28.8 Z','M150 150 L220.0 28.8 A140 140 0 0 1 271.2 80.0 Z','M150 150 L271.2 80.0 A140 140 0 0 1 290.0 150.0 Z','M150 150 L290.0 150.0 A140 140 0 0 1 271.2 220.0 Z','M150 150 L271.2 220.0 A140 140 0 0 1 220.0 271.2 Z','M150 150 L220.0 271.2 A140 140 0 0 1 150.0 290.0 Z','M150 150 L150.0 290.0 A140 140 0 0 1 80.0 271.2 Z','M150 150 L80.0 271.2 A140 140 0 0 1 28.8 220.0 Z','M150 150 L28.8 220.0 A140 140 0 0 1 10.0 150.0 Z','M150 150 L10.0 150.0 A140 140 0 0 1 28.8 80.0 Z','M150 150 L28.8 80.0 A140 140 0 0 1 80.0 28.8 Z','M150 150 L80.0 28.8 A140 140 0 0 1 150.0 10.0 Z'];
+drag = null;
+raf = 0;
+lastSeg = null;
+audio = null;
+
+componentWillUnmount() { if (this.raf) cancelAnimationFrame(this.raf); }
+
+isNight() {
+const m = this.state.mode;
+if (m === 'day') return false;
+if (m === 'night') return true;
+const h = new Date().getHours();
+return h >= 19 || h < 6;
+}
+
+pickIndex(n) {
+const limit = 4294967296 - (4294967296 % n);
+const buf = new Uint32Array(1);
+for (;;) { crypto.getRandomValues(buf); if (buf[0] < limit) return buf[0] % n; }
+}
+
+ensureAudio() {
+if (this.audio || !this.state.sound) return;
+const Ctx = window.AudioContext || window.webkitAudioContext;
+if (Ctx) this.audio = new Ctx();
+}
+
+tick() {
+if (!this.state.sound || !this.audio) return;
+const ctx = this.audio;
+const osc = ctx.createOscillator();
+const gain = ctx.createGain();
+osc.type = 'triangle';
+osc.frequency.value = this.isNight() ? 2300 : 1700;
+gain.gain.setValueAtTime(0.18, ctx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035);
+osc.connect(gain); gain.connect(ctx.destination);
+osc.start(); osc.stop(ctx.currentTime + 0.04);
+}
+
+buzz(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
+
+segAt(rot) { return Math.floor(rot / 30); }
+
+startSpin(turns) {
+if (this.state.spinning) return;
+this.ensureAudio();
+const target = this.pickIndex(12);
+const start = this.state.rot;
+const want = ((-15 - 30 * target) % 360 + 360) % 360;
+let end = start - (((start % 360) + 360) % 360) + want + 360 * turns;
+while (end < start + 360 * 3) end += 360;
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reduce || document.hidden) { this.setState({ rot: end, result: target, spinning: false }); this.buzz(40); return; }
+const dur = 3200 + turns * 260;
+const t0 = performance.now();
+this.lastSeg = this.segAt(start);
+this.setState({ spinning: true, result: null });
+const step = (now) => {
+const t = Math.min(1, (now - t0) / dur);
+const e = 1 - Math.pow(1 - t, 3);
+const rot = start + (end - start) * e;
+const s = this.segAt(rot);
+if (s !== this.lastSeg) { this.lastSeg = s; this.tick(); }
+if (t < 1) { this.setState({ rot }); this.raf = requestAnimationFrame(step); }
+else { this.setState({ rot: end, spinning: false, result: target }); this.buzz([30, 40, 60]); }
+};
+this.raf = requestAnimationFrame(step);
+}
+
+angle(e) {
+const r = e.currentTarget.getBoundingClientRect();
+return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * 180 / Math.PI;
+}
+
+onDown(e) {
+if (this.state.spinning) return;
+this.ensureAudio();
+e.currentTarget.setPointerCapture(e.pointerId);
+this.drag = { a: this.angle(e), t: performance.now(), v: 0 };
+this.lastSeg = this.segAt(this.state.rot);
+}
+
+onMove(e) {
+if (!this.drag) return;
+const a = this.angle(e);
+let d = a - this.drag.a;
+if (d > 180) d -= 360;
+if (d < -180) d += 360;
+const now = performance.now();
+this.drag.v = d / Math.max(1, now - this.drag.t);
+this.drag.a = a; this.drag.t = now;
+const rot = this.state.rot + d;
+const s = this.segAt(rot);
+if (s !== this.lastSeg) { this.lastSeg = s; this.tick(); }
+this.setState({ rot, result: null });
+}
+
+onUp() {
+if (!this.drag) return;
+const v = Math.abs(this.drag.v);
+this.drag = null;
+if (v > 0.25) this.startSpin(Math.max(3, Math.min(9, Math.round(v * 7))));
+}
+
+renderVals() {
+const night = this.isNight();
+const st = this.state;
+const dayFills = ['#1f6b4a', '#eef3ec', '#c8342b', '#e9a825', '#2a7f86', '#9cc9a6'];
+const dayInks = ['#ffffff', '#1d1d1b', '#ffffff', '#1d1d1b', '#ffffff', '#1d1d1b'];
+const nightFills = ['#ff4f8b', '#ffd23f', '#2fd1c4', '#5b3fd9', '#ff9a3c', '#9be15d'];
+const nightInks = ['#1a1530', '#1a1530', '#1a1530', '#ffffff', '#1a1530', '#1a1530'];
+const fills = night ? nightFills : dayFills;
+const inks = night ? nightInks : dayInks;
+const segs = this.paths.map((d, i) => {
+const mid = -75 + 30 * i;
+const flip = mid > 90 && mid < 270;
+return { d, fill: fills[i % 6], ink: inks[i % 6], label: this.names[i], tf: 'rotate(' + mid + ' 150 150)' + (flip ? ' rotate(180 224 150)' : '') };
+});
+const bulbs = [];
+if (night) { for (let k = 0; k < 24; k++) { const a = Math.PI * 2 * k / 24; bulbs.push({ x: (150 + 145 * Math.cos(a)).toFixed(1), y: (150 + 145 * Math.sin(a)).toFixed(1), halo: (st.spinning && k % 2 === Math.floor(st.rot / 30) % 2) ? '0.15' : '0.45' }); } }
+const ink = night ? '#f3e9d8' : '#1d1d1b';
+const rootStyle = 'position: relative; overflow: hidden; width: 390px; height: 844px; box-sizing: border-box; color: ' + (night ? '#f3e9d8' : '#1d1d1b') + '; font-family: Figtree, system-ui, sans-serif; display: flex; flex-direction: column';
+const panel = night ? 'border: 1.5px solid #3d3660; background: #241e3d;' : 'border: 2px solid #1d1d1b; background: #ffffff;';
+const modeDefs = [['auto', 'Auto'], ['day', 'Day'], ['night', 'Night']];
+const modes = modeDefs.map(([id, label]) => {
+const on = st.mode === id;
+return {
+label, pressed: on ? 'true' : 'false',
+style: 'min-height: 32px; padding: 0 10px; border-radius: 999px; font-family: inherit; font-size: 13px; cursor: pointer; ' + (on ? (night ? 'border: 1.5px solid #ffd23f; background: #ffd23f; color: #1a1530;' : 'border: 1.5px solid #1f6b4a; background: #1f6b4a; color: #ffffff;') : (night ? 'border: 1.5px solid #3d3660; background: transparent; color: #f3e9d8;' : 'border: 1.5px solid #1d1d1b; background: #ffffff; color: #1d1d1b;')),
+pick: () => this.setState({ mode: id })
+};
+});
+const result = st.result;
+return {
+night, day: !night, segs, bulbs,
+lights: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+rootStyle,
+rootClass: night ? 'wall-night' : 'wall-day',
+awningClass: night ? 'awning-night' : 'awning-day',
+lampStyle: night ? 'width: 9px; height: 9px; margin-top: 3px; border-radius: 50%; background: #ffd98a; box-shadow: 0 0 10px 3px rgba(255,217,138,0.55)' : 'width: 14px; height: 7px; border-radius: 7px 7px 0 0; background: #1f6b4a; box-shadow: 0 2px 0 #fff3cf',
+grainStyle: 'position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; ' + (night ? 'mix-blend-mode: screen; opacity: 0.07' : 'mix-blend-mode: multiply; opacity: 0.16'),
+wheelTf: 'rotate(' + st.rot.toFixed(2) + ' 150 150)',
+wheelLabel: result === null ? 'Wheel of 12 places. Swipe or press Spin.' : 'Wheel landed on ' + this.names[result],
+plate: night ? '#2a2540' : 'none',
+plateEdge: night ? '#3d3660' : '#1f6b4a',
+segStroke: night ? '#1a1530' : '#1d1d1b',
+rim: night ? '#2a2540' : '#1d1d1b',
+rimR: night ? 140 : 120,
+rimW: night ? 6 : 2,
+segScale: night ? '' : 'translate(150 150) scale(0.857) translate(-150 -150)',
+labelX: night ? 224 : 229,
+labelSize: night ? 12 : 14,
+hubR: night ? 24 : 20,
+pointerPts: night ? '139,0 161,0 150,24' : '139,0 161,0 150,32',
+rimImgStyle: 'position: absolute; inset: 0; transform: rotate(' + st.rot.toFixed(2) + 'deg)',
+hub: night ? '#1a1530' : '#eef3ec',
+hubEdge: night ? '#ffd98a' : '#1f6b4a',
+pointer: night ? '#ff4f8b' : '#c8342b',
+showResult: result !== null && !st.spinning,
+showControls: result === null || st.spinning,
+resultName: result === null ? '' : this.names[result],
+resultMeta: result === null ? '' : this.metas[result],
+cardStyle: 'margin: 0; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; ' + (night ? 'border: 1.5px solid #ffd23f; background: #241e3d; box-shadow: 0 0 28px rgba(255,210,63,0.18);' : 'border: 2px solid #1d1d1b; background: #ffffff; box-shadow: 0 4px 0 #1d1d1b;'),
+kickerStyle: 'margin: 0; font-weight: 800; font-size: 15px; line-height: 20px; color: ' + (night ? '#ffd23f' : '#1f6b4a'),
+nameStyle: 'margin: 0; font-family: Bungee, Figtree, sans-serif; font-weight: 400; font-size: 28px; line-height: 32px; color: ' + (night ? '#ffffff' : '#1d1d1b'),
+mapsStyle: 'min-height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 999px; font-size: 16px; font-weight: 800; text-decoration: none; ' + (night ? 'border: 2px solid #1a1530; background: #ff4f8b; color: #1a1530;' : 'border: 2px solid #1d1d1b; background: #1f6b4a; color: #ffffff;'),
+ghostStyle: 'min-height: 48px; border-radius: 999px; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; ' + (night ? 'border: 1.5px solid #f3e9d8; background: transparent; color: #f3e9d8;' : 'border: 2px solid #1d1d1b; background: #ffffff; color: #1d1d1b;'),
+summaryStyle: 'margin: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 10px 16px; border-radius: 12px; font-family: inherit; font-size: 16px; line-height: 22px; text-align: left; cursor: pointer; color: ' + ink + '; ' + panel,
+summaryText: (st.halal ? 'JAKIM-certified, ' : '') + 'within ' + st.radius + ', ' + (st.cuisine === 'Any cuisine' ? 'any cuisine' : st.cuisine.toLowerCase()) + ', ' + (st.rating ? 'rated 4.0 and up' : 'any rating'),
+changeStyle: 'font-weight: 800; text-decoration: underline; color: ' + (night ? '#ffd23f' : '#1f6b4a'),
+sheetOpen: st.sheet,
+openSheet: () => { if (st.spinning) return; this.snap = [st.radius, st.cuisine, st.rating, st.halal].join('|'); this.setState({ sheet: true }); },
+closeSheet: () => { const changed = this.snap !== [this.state.radius, this.state.cuisine, this.state.rating, this.state.halal].join('|'); this.setState(changed ? { sheet: false, result: null } : { sheet: false }); },
+resetFilters: () => this.setState({ radius: '2 km', cuisine: 'Any cuisine', rating: true, halal: false }),
+sheetStyle: 'position: absolute; left: 0; right: 0; bottom: 0; padding: 20px 16px 24px; border-radius: 18px 18px 0 0; display: flex; flex-direction: column; gap: 16px; ' + (night ? 'background: #241e3d; color: #f3e9d8; border-top: 1.5px solid #ffd23f;' : 'background: #ffffff; color: #1d1d1b; border-top: 2px solid #1d1d1b;'),
+ghostSmallStyle: 'min-height: 36px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; background: transparent; color: ' + ink + '; border: 1.5px solid ' + (night ? '#3d3660' : '#1d1d1b') + ';',
+radii: ['1 km', '2 km', '5 km', '10 km', 'All of KK'].map((label) => {
+const on = st.radius === label;
+return { label, checked: on ? 'true' : 'false', pick: () => this.setState({ radius: label }),
+style: 'min-height: 44px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; ' + (on ? (night ? 'border: 2px solid #ffd23f; background: #ffd23f; color: #1a1530;' : 'border: 2px solid #1f6b4a; background: #1f6b4a; color: #ffffff;') : (night ? 'border: 1.5px solid #f3e9d8; background: transparent; color: #f3e9d8;' : 'border: 2px solid #1d1d1b; background: #ffffff; color: #1d1d1b;')) };
+}),
+cuisine: st.cuisine,
+cuisines: ['Any cuisine', 'Chinese', 'Malaysian', 'Japanese', 'Korean', 'Thai', 'Indian', 'Indonesian', 'Seafood', 'Fast food', 'Cafe'],
+pickCuisine: (e) => this.setState({ cuisine: e.target.value }),
+selectStyle: 'height: 48px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 16px; ' + (night ? 'border: 1.5px solid #f3e9d8; background: #1a1530; color: #f3e9d8;' : 'border: 2px solid #1d1d1b; background: #ffffff; color: #1d1d1b;'),
+switchRowStyle: 'display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 6px 0; border: 0; background: transparent; font-family: inherit; font-size: 16px; line-height: 22px; font-weight: 600; cursor: pointer; color: ' + ink + ';',
+ratingOn: st.rating ? 'true' : 'false',
+ratingText: st.rating ? 'On' : 'Off',
+ratingKnob: 'min-width: 52px; padding: 6px 0; text-align: center; border-radius: 999px; font-size: 14px; font-weight: 800; ' + (st.rating ? (night ? 'background: #ffd23f; color: #1a1530;' : 'background: #1f6b4a; color: #ffffff;') : (night ? 'border: 1.5px solid #f3e9d8;' : 'border: 2px solid #1d1d1b;')),
+toggleRating: () => this.setState({ rating: !st.rating }),
+halalOn: st.halal ? 'true' : 'false',
+halalText: st.halal ? 'On' : 'Off',
+halalKnob: 'min-width: 52px; padding: 6px 0; text-align: center; border-radius: 999px; font-size: 14px; font-weight: 800; ' + (st.halal ? (night ? 'background: #ffd23f; color: #1a1530;' : 'background: #1f6b4a; color: #ffffff;') : (night ? 'border: 1.5px solid #f3e9d8;' : 'border: 2px solid #1d1d1b;')),
+toggleHalal: () => this.setState({ halal: !st.halal }),
+doneStyle: 'min-height: 52px; border-radius: 999px; font-family: inherit; font-size: 17px; font-weight: 800; cursor: pointer; ' + (night ? 'border: 2px solid #1a1530; background: #ff4f8b; color: #1a1530;' : 'border: 2px solid #1d1d1b; background: #c8342b; color: #ffffff;'),
+spinStyle: 'min-height: 60px; border-radius: 999px; font-family: Bungee, Figtree, sans-serif; font-size: 24px; letter-spacing: 0.04em; cursor: pointer; ' + (night ? 'border: 2px solid #1a1530; background: #ff4f8b; color: #1a1530; box-shadow: 0 0 24px rgba(255,79,139,0.55);' : 'border: 2px solid #1d1d1b; background: #c8342b; color: #ffffff; box-shadow: 0 4px 0 #1d1d1b;'),
+spinText: st.spinning ? 'Spinning' : 'Spin',
+spinning: st.spinning,
+modes,
+soundOn: st.sound ? 'true' : 'false',
+soundText: st.sound ? 'Sound on' : 'Sound off',
+soundStyle: 'min-height: 32px; padding: 0 10px; border-radius: 999px; font-family: inherit; font-size: 13px; cursor: pointer; background: transparent; color: ' + ink + '; border: 1.5px solid ' + (night ? '#3d3660' : '#1d1d1b') + ';',
+toggleSound: () => this.setState({ sound: !st.sound }),
+spin: () => this.startSpin(5),
+down: (e) => this.onDown(e),
+move: (e) => this.onMove(e),
+up: () => this.onUp()
+};
+}
+}
+</script>
+</body>
+</html>

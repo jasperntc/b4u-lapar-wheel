@@ -20,7 +20,7 @@ export const DEFAULT_RADIUS_KM = 2;
 
 /** "" is Any. The other keys are the Worker's CUISINES keys; a test keeps them in step. */
 export const CUISINE_LABELS: Record<string, string> = {
-  "": "Any",
+  "": "Any cuisine",
   chinese: "Chinese",
   japanese: "Japanese",
   korean: "Korean",
@@ -32,6 +32,13 @@ export const CUISINE_LABELS: Record<string, string> = {
   cafe: "Cafe",
   malaysian: "Malaysian",
 };
+
+/** The filters in one line, for the summary button: "Near you, within 2 km, any cuisine, rated 4.0 and up". */
+export function filterSummary(f: { areaName: string | null; radiusKm: number; cuisine: string; ratingOn: boolean }): string {
+  const where = f.areaName ? `In ${f.areaName}` : "Near you";
+  const kind = (CUISINE_LABELS[f.cuisine] ?? CUISINE_LABELS[""]).toLowerCase();
+  return `${where}, within ${f.radiusKm} km, ${kind}, ${f.ratingOn ? "rated 4.0 and up" : "any rating"}`;
+}
 
 const MESSAGES: Record<string, string> = {
   rate_limited: "Slow down, try again in a minute.",

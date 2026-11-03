@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { WHEEL_COLOURS, WHEEL_TEXT, segmentColour } from "../components/Wheel";
-import { brandToken } from "../lib/brand-tokens";
+import { SEGMENT_COLOURS, segmentColour } from "../components/Wheel";
 import {
   awaitSpin,
   cachedPlaces,
   CUISINE_LABELS,
   emptyMessage,
   errorMessage,
+  filterSummary,
   formatDistance,
   mapsUrl,
   nextRadius,
@@ -16,6 +16,7 @@ import {
   SPIN_MS,
   wheelRotation,
 } from "../lib/near-me";
+import { laparToken } from "../lib/tokens";
 import { CUISINES } from "../worker/api";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -72,7 +73,7 @@ describe("messages", () => {
 
   it("offers exactly the Worker's cuisines, plus Any", () => {
     expect(Object.keys(CUISINE_LABELS).filter(Boolean).sort()).toEqual(Object.keys(CUISINES).sort());
-    expect(CUISINE_LABELS[""]).toBe("Any");
+    expect(CUISINE_LABELS[""]).toBe("Any cuisine");
     expect(JSON.stringify(CUISINE_LABELS)).not.toMatch(/halal/i);
   });
 
@@ -115,7 +116,19 @@ describe("wheelRotation", () => {
   });
 });
 
-describe("wheel colours", () => {
+describe("filterSummary", () => {
+  const f = { areaName: null, radiusKm: 2, cuisine: "", ratingOn: true };
+
+  it.each([
+    [f, "Near you, within 2 km, any cuisine, rated 4.0 and up"],
+    [{ ...f, areaName: "Likas", radiusKm: 5 }, "In Likas, within 5 km, any cuisine, rated 4.0 and up"],
+    [{ ...f, cuisine: "fast-food", ratingOn: false }, "Near you, within 2 km, fast food, any rating"],
+  ])("%o reads %s", (filters, text) => {
+    expect(filterSummary(filters)).toBe(text);
+  });
+});
+
+describe("colours", () => {
   const luminance = (hex: string) => {
     const [r, g, b] = [1, 3, 5].map((i) => {
       const c = parseInt(hex.slice(i, i + 2), 16) / 255;
@@ -127,12 +140,35 @@ describe("wheel colours", () => {
     const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
     return (hi + 0.05) / (lo + 0.05);
   };
+  const looks = ["day", "night"] as const;
 
-  it.each(WHEEL_COLOURS)("text on %s meets AA in both themes", (colour) => {
-    const fill = brandToken(`wheel-${colour}`);
-    const text = brandToken(WHEEL_TEXT[colour]);
-    expect(contrast(fill.light, text.light)).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(fill.dark, text.dark)).toBeGreaterThanOrEqual(4.5);
+  it.each(Array.from({ length: SEGMENT_COLOURS }, (_, i) => i + 1))("text on wheel segment %i meets AA in both looks", (k) => {
+    const fill = laparToken(`seg-${k}`);
+    const text = laparToken(`seg-${k}-text`);
+    for (const look of looks) expect(contrast(fill[look], text[look]), look).toBeGreaterThanOrEqual(4.5);
+  });
+
+  // Every text and background pair in docs/redesign.md's token tables.
+  it.each([
+    ["ink", "ground"],
+    ["ink-soft", "ground"],
+    ["ink", "panel"],
+    ["ink-soft", "panel"],
+    ["ink", "field"],
+    ["accent", "panel"],
+    ["on-accent", "accent"],
+    ["on-spin", "spin"],
+    ["on-maps", "maps"],
+  ])("%s on %s meets AA in both looks", (text, background) => {
+    for (const look of looks) {
+      expect(contrast(laparToken(text)[look], laparToken(background)[look]), look).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("the title meets AA on the day signboard and the night ground", () => {
+    const title = laparToken("title-ink");
+    expect(contrast(title.day, laparToken("sign").day)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(title.night, laparToken("ground").night)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("never gives neighbouring segments the same colour, including last and first", () => {

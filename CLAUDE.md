@@ -118,14 +118,14 @@ Parked on 2026-10-28: see `docs/data/README.md`. The data and scripts stay. The 
 
 ## Brand
 
-- docs/brand.md and docs/brand-logos.md are the rules for colour, type, logo and copy, copied from the hub. They win over any skill's defaults.
-- Use only the CSS variables in app/brand-tokens.css, which is copied as-is from the hub. Don't edit it here. No raw hex values anywhere else. A test checks this.
-- Use the frontend-design skill for layout, hierarchy, copy and motion decisions inside those rules.
+- Lapar Wheel has its own look, kopitiam by day and pasar malam by night, with a thin Built4You credit. docs/redesign.md is the design spec (approved 2026-11-04). It wins over any skill's defaults.
+- Colours, fonts, shadows and the wheel's segment colours live in app/lapar-tokens.css, switched on `[data-look="day|night"]`. app/brand-tokens.css is copied as-is from the hub and now only serves the Built4You credit; don't edit it here. No raw hex values outside these two files. A test checks this.
+- Use the frontend-design skill for layout, hierarchy and copy decisions inside these rules.
 - Spacing uses only the steps in app/brand-tokens.css (1, 2, 3, 4, 6, 8, 12, 16). A test checks this.
-- Type sizes are the roles in app/globals.css (`text-display-xl`, `text-display`, `text-title`, `text-stamp-text`, `text-body`, `text-body-sm`, `text-button`, `text-hand`). Use only these roles.
-- The seven `wheel-*` colours are for the wheel, which is the one multicolour thing in the series. `radius-pill` is only for the spin button.
-- The spin is this page's one motion. No fade-up on scroll.
-- Body copy sits on `surface-label` labels on the kraft ground. Only the headline sits directly on kraft.
+- Type sizes are the roles in app/globals.css (`text-title`, `text-place`, `text-spin-label`, `text-sheet-title`, `text-body`, `text-sub`, `text-small`, `text-kicker`, `text-button`). Use only these roles. Bungee (`font-sign`) has only capitals, so only the title, place, spin and sheet-title roles use it.
+- Labels, buttons and copy are in sentence case. Buttons and chips are pill-shaped.
+- Every text pair passes WCAG AA (4.5:1) in both looks. A test checks the token pairs.
+- Motion is only what docs/redesign.md lists: the spin, the lights coming on (day to night only), the filter sheet's slide-up and the result card's rise. Ticks, the landing buzz, swipe, the waiting spin and the bulb chase come in the next PR. Nothing else moves: no page-load animation, no fade-up on scroll. Everything respects `prefers-reduced-motion` and a hidden page: no animation, same result.
 - It must not look like the portfolio.
 - Works at phone width first. Most visitors come from an Instagram story.
 
