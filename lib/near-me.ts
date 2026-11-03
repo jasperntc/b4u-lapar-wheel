@@ -76,6 +76,27 @@ export function wheelRotation(current: number, index: number, n: number): number
   return current + 5 * 360 + delta;
 }
 
+/** How long the wheel turns. The Wheel's transition and the fallback timer both use it. */
+export const SPIN_MS = 4000;
+
+/**
+ * Starts waiting for a spin's result and returns the wheel's transitionend handler. `show` runs exactly once:
+ * straight away when the animation is skipped (a hidden page or reduced motion), otherwise on transitionend or
+ * SPIN_MS + 300 ms later, whichever comes first. The timer covers a transitionend that never fires.
+ */
+export function awaitSpin(show: () => void, skip: { hidden: boolean; reducedMotion: boolean }): () => void {
+  let shown = false;
+  const once = () => {
+    if (shown) return;
+    shown = true;
+    clearTimeout(timer);
+    show();
+  };
+  const timer = skip.hidden || skip.reducedMotion ? undefined : setTimeout(once, SPIN_MS + 300);
+  if (timer === undefined) once();
+  return once;
+}
+
 /** POST /lapar-wheel/api/nearby. Network failures and unreadable replies count as upstream. */
 export async function searchNearby(body: NearbyRequest, base = "/lapar-wheel/"): Promise<NearbyResult> {
   try {

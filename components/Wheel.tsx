@@ -1,4 +1,5 @@
 import type { TransitionEvent } from "react";
+import { SPIN_MS } from "@/lib/near-me";
 
 /** Wheel colours in segment order, alternating dark and light text so neighbours stand apart. */
 export const WHEEL_COLOURS = ["tomato", "marigold", "sea", "plum", "leaf", "denim", "rose"] as const;
@@ -50,11 +51,13 @@ type Props = {
   names: string[];
   /** Degrees clockwise, from wheelRotation. */
   rotation: number;
+  /** False jumps straight to the rotation, for a spin whose animation is skipped. */
+  animate: boolean;
   onSpinEnd: () => void;
 };
 
 /** The multicolour spinner. It only animates to the rotation it's given; the pick is made before. */
-export function Wheel({ names, rotation, onSpinEnd }: Props) {
+export function Wheel({ names, rotation, animate, onSpinEnd }: Props) {
   const labels = names.length ? names : PLACEHOLDER;
   const n = labels.length;
   const seg = 360 / n;
@@ -63,8 +66,10 @@ export function Wheel({ names, rotation, onSpinEnd }: Props) {
   return (
     <div className="relative mx-auto w-full max-w-[22rem]" aria-hidden="true">
       <div
-        className="transition-transform duration-[4000ms] ease-[cubic-bezier(0.15,0.75,0.1,1)] motion-reduce:transition-none"
-        style={{ transform: `rotate(${rotation}deg)` }}
+        className={
+          animate ? "transition-transform ease-[cubic-bezier(0.15,0.75,0.1,1)] motion-reduce:transition-none" : "transition-none"
+        }
+        style={{ transform: `rotate(${rotation}deg)`, transitionDuration: `${SPIN_MS}ms` }}
         onTransitionEnd={ended}
       >
         <svg viewBox="0 0 320 320" className="block w-full">

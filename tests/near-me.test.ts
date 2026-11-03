@@ -1,7 +1,8 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WHEEL_COLOURS, WHEEL_TEXT, segmentColour } from "../components/Wheel";
 import { brandToken } from "../lib/brand-tokens";
 import {
+  awaitSpin,
   cachedPlaces,
   CUISINE_LABELS,
   emptyMessage,
@@ -12,6 +13,7 @@ import {
   RADII_KM,
   refusedMessage,
   searchNearby,
+  SPIN_MS,
   wheelRotation,
 } from "../lib/near-me";
 import { CUISINES } from "../worker/api";
@@ -170,5 +172,57 @@ describe("searchNearby (mocked fetch)", () => {
     expect(await ask()).toEqual({ ok: false, error: "upstream" });
     vi.stubGlobal("fetch", vi.fn(async () => new Response("<html>", { status: 502 })));
     expect(await ask()).toEqual({ ok: false, error: "upstream" });
+  });
+});
+
+describe("awaitSpin", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+  const animated = { hidden: false, reducedMotion: false };
+
+  it("shows the result at once on a hidden page, and only once", () => {
+    const show = vi.fn();
+    const onTransitionEnd = awaitSpin(show, { hidden: true, reducedMotion: false });
+    expect(show).toHaveBeenCalledTimes(1);
+    onTransitionEnd();
+    vi.runAllTimers();
+    expect(show).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the result at once under reduced motion, and only once", () => {
+    const show = vi.fn();
+    const onTransitionEnd = awaitSpin(show, { hidden: false, reducedMotion: true });
+    expect(show).toHaveBeenCalledTimes(1);
+    onTransitionEnd();
+    vi.runAllTimers();
+    expect(show).toHaveBeenCalledTimes(1);
+  });
+
+  it("still shows the result when transitionend never fires", () => {
+    const show = vi.fn();
+    awaitSpin(show, animated);
+    vi.advanceTimersByTime(SPIN_MS + 299);
+    expect(show).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(show).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the result on transitionend, and once only when the timer fires too", () => {
+    const show = vi.fn();
+    const onTransitionEnd = awaitSpin(show, animated);
+    vi.advanceTimersByTime(SPIN_MS);
+    onTransitionEnd();
+    expect(show).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(1_000);
+    onTransitionEnd();
+    expect(show).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the result once when the timer wins and transitionend comes late", () => {
+    const show = vi.fn();
+    const onTransitionEnd = awaitSpin(show, animated);
+    vi.advanceTimersByTime(SPIN_MS + 300);
+    onTransitionEnd();
+    expect(show).toHaveBeenCalledTimes(1);
   });
 });

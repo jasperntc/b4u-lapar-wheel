@@ -13,6 +13,7 @@ import {
   nextRadius,
   refusedMessage,
   searchNearby,
+  awaitSpin,
   cachedPlaces,
   wheelRotation,
   type NearbyRequest,
@@ -70,6 +71,8 @@ export function NearMe() {
   const busyRef = useRef(false);
   const cache = useRef<SpinCache | null>(null);
   const pending = useRef<Place | null>(null);
+  const spinEnd = useRef(() => {});
+  const [animate, setAnimate] = useState(true);
 
   async function askLocation(): Promise<Centre | null> {
     setLocating(true);
@@ -135,9 +138,11 @@ export function NearMe() {
 
     const index = pickIndex(list.length);
     pending.current = list[index];
+    // A hidden page may never run the transition, so it skips the animation like reduced motion: same pick, shown at once.
+    const skip = { hidden: document.hidden, reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches };
+    setAnimate(!skip.hidden && !skip.reducedMotion);
     setRotation((r) => wheelRotation(r, index, list.length));
-    // No transition runs under reduced motion, so show the same pick straight away.
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) finishSpin();
+    spinEnd.current = awaitSpin(finishSpin, skip);
   }
 
   function tryRadius(next: number) {
@@ -148,7 +153,7 @@ export function NearMe() {
   return (
     <div className="mt-8 grid gap-8 md:grid-cols-2 md:items-start">
       <section aria-label="Wheel" className="flex flex-col items-center gap-6">
-        <Wheel names={places.map((p) => p.name)} rotation={rotation} onSpinEnd={finishSpin} />
+        <Wheel names={places.map((p) => p.name)} rotation={rotation} animate={animate} onSpinEnd={() => spinEnd.current()} />
         <Button variant="primary" pill onClick={() => void spin()} disabled={busy} aria-busy={busy}>
           {busy ? "Spinning…" : "Spin"}
         </Button>
