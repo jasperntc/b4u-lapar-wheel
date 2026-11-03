@@ -1,5 +1,8 @@
 /** Search centres for when location is refused. Coordinates are OSM place nodes (© OpenStreetMap contributors, ODbL),
  * from data/raw/osm-kk-areas-2026-10-24.json; the city centre is the `place=city` node 303545829. */
+/** Greater Kota Kinabalu: the same box as the data pull (docs/data/README.md). The area picker covers only this. */
+export const KK_BOX = { south: 5.865, west: 116.035, north: 6.05, east: 116.175 };
+
 export type Area = { id: string; name: string; lat: number; lon: number };
 
 export const areas: Area[] = [

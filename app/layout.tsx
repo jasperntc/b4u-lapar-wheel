@@ -9,7 +9,7 @@ const base = import.meta.env.BASE_URL;
 export const metadata: Metadata = {
   metadataBase: new URL("https://built4you.jasperntc.dev"),
   title: "Lapar Wheel",
-  description: "Spin a wheel to pick where to eat in Kota Kinabalu.",
+  description: "Spin a wheel to pick where to eat near you.",
   icons: {
     icon: `${base}brand/b4u-favicon.svg`,
     apple: `${base}apple-touch-icon.png`,

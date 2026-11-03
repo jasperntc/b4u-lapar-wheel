@@ -3,6 +3,8 @@
 ## What it does
 Lapar Wheel picks a place to eat near you when nobody can decide. Allow location (or pick an area), set how far you'll go, filter by cuisine or JAKIM-certified halal, then spin. It lands on one real place that's open now, with a link to open it in Maps. It's for groups of friends who can't agree on where to eat, starting with Crystal, who sent the idea. She agreed on 2026-10-28 to be credited by name and filmed.
 
+**Changed 2026-11-02:** near me works anywhere, after a friend in Taiwan could only get KK places. Halal mode and the area picker stay greater KK only.
+
 **Changed 2026-10-28:** "near me" is the core of v1. Places come live from the Google Places API at spin time, and nothing from Google is stored except place IDs. The curated OpenStreetMap/Overture list (PR3a) is parked; that data now only supplies coordinates for certified places and gaps to add to OpenStreetMap later.
 
 **Success:** the friend group still uses it weekly a month after launch.
@@ -11,7 +13,7 @@ Lapar Wheel picks a place to eat near you when nobody can decide. Allow location
 Must:
 - **Near me spin:** a Cloudflare Worker calls Places API (New) Text Search live with the user's location, a radius box, `openNow: true`, `minRating`, and an optional cuisine type (`includedType` + `strictTypeFiltering`). One Pro request per spin; fields limited to id, display name, location, primary type.
 - **Halal mode (JAKIM-certified):** picks only from my certified list within the radius. Each pick makes one Place Details call for `currentOpeningHours.openNow` (Enterprise, 1,000 free a month) and re-spins up to 3 times if it's closed. Labelled "JAKIM-certified, expires [date]", never just "halal". Uncertified places get no halal label at all.
-- **Location:** browser geolocation, asked only when the user taps "Near me". If refused, pick an area (City centre, Likas, Inanam, Menggatal, Luyang, Damai, Tanjung Aru, Kepayan, Penampang, Putatan) as the search centre.
+- **Location:** browser geolocation, anywhere in the world, asked only when the user taps "Near me". If refused, and an earlier fix hasn't shown the user is outside KK, pick an area in Kota Kinabalu (City centre, Likas, Inanam, Menggatal, Luyang, Damai, Tanjung Aru, Kepayan, Penampang, Putatan) as the search centre.
 - **Filters:** radius (1 / 2 / 5 / 10 km), cuisine, minimum rating (default 4.0, can switch off), halal mode.
 - **Spin:** uniform pick with `pickIndex` (`crypto.getRandomValues`, rejection sampling), and the animation lands on it. Spins are real.
 - **Result card:** live name, distance, Maps link (`https://www.google.com/maps/search/?api=1&query=<name>&query_place_id=<placeId>`), JAKIM label and expiry when certified.
@@ -21,7 +23,7 @@ Must:
 
 Nice-to-have: price levels filter, a "report closed / suggest a place" link that creates an OpenStreetMap note.
 
-Won't (v1): logins, live multiplayer rooms, storing any Google data except place IDs, scraping anything, reviews, regions beyond greater KK.
+Won't (v1): logins, live multiplayer rooms, storing any Google data except place IDs, scraping anything, reviews, halal mode or the area picker beyond greater KK, typed city search (later).
 
 ## Google data rules
 - Store only place IDs, permanently. Never store names, addresses, hours, ratings or status, in the repo, a database or a log.
@@ -37,6 +39,7 @@ Won't (v1): logins, live multiplayer rooms, storing any Google data except place
 **Changed 2026-10-31:** Google's free trial doesn't allow quota changes, so the Worker's own counter is the hard stop, and the rate limit is 20 a minute so friends sharing an IP aren't blocked.
 
 - Worker: a hard cap of 150 Google calls a day across both endpoints, counted exactly in a Durable Object and reset at midnight Malaysia time. Google Cloud keeps a budget alert. Budgets only alert; the cap stops.
+- Worker (2026-11-02): per-IP daily limit of 30 Google calls, reset at midnight Malaysia time and kept in memory only, so one person can't use up the shared 150. When hit: "You’ve used today’s spins. Try again tomorrow."
 - Worker: per-IP rate limit of 20 requests a minute, no photos fetched, Pro fields only. One exception: `currentOpeningHours.openNow` (Enterprise) for halal-mode picks. Share links check `businessStatus` (Pro).
 
 ## Data model

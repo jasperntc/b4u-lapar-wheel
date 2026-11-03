@@ -3,17 +3,14 @@ import { areas } from "@/content/areas";
 type Props = {
   areaId: string;
   onChange: (areaId: string) => void;
-  /** True when location was refused or unavailable, rather than outside the area. */
-  refused: boolean;
 };
 
-/** The search centre when location isn't available. Its coordinates are OSM place nodes, hence the credit. */
-export function AreaPicker({ areaId, onChange, refused }: Props) {
+/** The search centre when location is refused: greater KK only. Its coordinates are OSM place nodes, hence the credit. */
+export function AreaPicker({ areaId, onChange }: Props) {
   return (
     <div className="mt-4">
-      {refused && <p>Couldn’t get your location. Pick an area instead.</p>}
-      <label className="mt-2 block">
-        <span className="block text-body-sm text-ink-soft">Area</span>
+      <label className="block">
+        <span className="block text-body-sm text-ink-soft">Pick an area in Kota Kinabalu</span>
         <select
           value={areaId}
           onChange={(e) => onChange(e.target.value)}
