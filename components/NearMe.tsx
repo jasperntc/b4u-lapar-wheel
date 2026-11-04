@@ -236,7 +236,7 @@ export function NearMe() {
     if (filters === filtersAtOpen.current) return;
     setPick(null);
     setNotice(null);
-    // The opener may have been the result card's Filters button, which is now gone.
+    // The opener may have been the result card's Change filters link, which is now gone.
     requestAnimationFrame(() => summary.current?.focus());
   }
 
@@ -264,9 +264,13 @@ export function NearMe() {
 
   return (
     <div className="flex flex-col gap-3">
-      <section aria-label="Wheel" className={
-          notice || showRefused || (shared && shared.view !== "loading" && shared.view !== "shared") ? "wheel-dim" : undefined
-        }>
+      {/* The turning square's corners reach 1.41× its width mid-turn; clip them so the page never scrolls sideways. */}
+      <section
+        aria-label="Wheel"
+        className={`overflow-x-clip ${
+          notice || showRefused || (shared && shared.view !== "loading" && shared.view !== "shared") ? "wheel-dim" : ""
+        }`}
+      >
         <Wheel
           names={places.map((p) => p.name)}
           rotation={rotation}
@@ -289,9 +293,6 @@ export function NearMe() {
               <Button onClick={() => void spin()} disabled={busy}>
                 Spin again
               </Button>
-              <Button onClick={openSheet} disabled={busy} aria-haspopup="dialog">
-                Filters
-              </Button>
               <Button onClick={() => void share(pick)} disabled={busy}>
                 {copied ?? "Share"}
               </Button>
@@ -302,6 +303,15 @@ export function NearMe() {
                 <input readOnly value={shareUrl(pick.id)} onFocus={(e) => e.currentTarget.select()} className={field} />
               </label>
             )}
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              onClick={openSheet}
+              disabled={busy}
+              className="min-h-11 cursor-pointer self-center px-3 text-notice-body font-semibold underline underline-offset-3"
+            >
+              Change filters
+            </button>
             <p className="text-small text-ink-soft" translate="no">
               Google Maps
             </p>
