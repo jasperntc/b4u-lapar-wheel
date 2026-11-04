@@ -7,6 +7,6 @@ How Lapar Wheel should look, as of 2026-11-04.
 - `screens/` holds a screenshot of each screen at 390px wide (2x), named `<look>-<screen>.jpg`. Screens taller than 844px are shown at full height: the page scrolls there.
 - `../redesign-prototype.dc.html` is the earlier clickable prototype's source. Use it only for the spin code (`startSpin`, the swipe handlers, `tick`). Its footer and notices are out of date.
 
-Screens: `start`, `result`, `sheet`, `empty-2` (nothing open at 2 km), `empty-10` (nothing open at 10 km with filters), `cap` (out of spins for everyone), `ip-cap` (out of spins for you), `rate` (slow down), `refused` (location refused).
+Screens: `start`, `result`, `sheet`, `empty-2` (nothing open at 2 km), `empty-10` (nothing open at 10 km with filters), `cap` (out of spins for everyone), `ip-cap` (out of spins for you), `rate` (slow down), `refused` (location refused), `shared` (opened from a share link), `shared-gone` (the shared place isn't available anymore), `shared-cap` (a share link opened when Lapar Wheel is out of spins).
 
 The Sound toggle and the "Or swipe the wheel" hint arrive in PR 2. The night `cap` and `ip-cap` screens show the stall closed: roof bulbs and neon off, wheel dimmed.
