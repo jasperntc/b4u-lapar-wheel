@@ -60,7 +60,7 @@ Self-hosted, never from Google Fonts (that would send visitors' IPs to Google): 
 | Body | Figtree 400 | 16 / 22 |
 | Subtitle, small print | Figtree 600 / 400 | 14 / 20, 13 / 18 |
 | Kicker ("Go makan at") | Figtree 800 | 15 / 20 |
-| Buttons | Figtree 600, Open in Maps 800 | 16 |
+| Buttons | Figtree 600; the main action 800 (Open in Maps, a notice's first button, Done) | 16 |
 
 Bungee only has capitals, so only these display roles use it. Labels and buttons stay in sentence case.
 
@@ -131,16 +131,16 @@ It fades to `saturate(0.2)` at 0.5 opacity, since it has nothing to land on. Whe
 
 | Case | Picture | Kicker | Headline | Body | Buttons |
 |---|---|---|---|---|---|
-| Nothing open | Empty cup | The active filters only: "Within 2 km", plus the cuisine if set, plus "rated 4.0 and up" if on. For example, "Within 10 km, Japanese, rated 4.0 and up" | Nothing open nearby | None below 10 km. At 10 km: "That's as far as it goes. Loosen a filter to see more." | In this order, at most two: "Try [next] km", "Any cuisine" (if a cuisine is set), "Any rating" (if the rating switch is on). If none apply: "Find food in Google Maps". Under the buttons, a text button "Change filters" opens the sheet |
+| Nothing open | Empty cup | The active filters only: "Within 2 km", plus the cuisine if set, plus "rated 4.0 and up" if on. For example, "Within 10 km, Japanese, rated 4.0 and up" | Nothing open nearby | None below 10 km. At 10 km: "That's as far as it goes. Loosen a filter to see more." | In this order, at most two: "Try [next] km", "Any cuisine" (if a cuisine is set), "Any rating" (if the rating switch is on). If none apply: "Find food in Google Maps". Under the buttons, "Change filters", a text link with a 44px tall tap area, opens the sheet |
 | `daily_cap` | Day: shutter. Night: stall | The reset time (see below) | Out of spins for today | "Lapar Wheel has a daily limit so it stays free. Spins come back at 12 am Malaysia time." | "Find food in Google Maps" |
 | `ip_daily_cap` | As above | The reset time | You've used today's spins | "Everyone gets 30 a day. They come back at 12 am Malaysia time." | "Find food in Google Maps" |
 | `rate_limited` | None | None | Slow down | "Try again in a minute." | "Try again" |
 | Other errors | None | None | Something went wrong | None | "Try again" |
-| Location refused | None | None | Location is off | `refusedMessage`, then the area picker when allowed | "Try location again" |
+| Location refused | None | None | Location is off | `refusedMessage`, then the area picker when allowed | "Spin" (primary, only when the area picker shows), then "Try location again" |
 
 - "Try [next] km", "Any cuisine" and "Any rating" change that filter and spin at once, like the current "Try 5 km?" button. "Try again" spins again.
 - "Find food in Google Maps" opens `https://www.google.com/maps/search/?api=1&query=<cuisine> restaurants` (just "restaurants" when no cuisine is set) in a new tab. It's a plain link: no API call, nothing stored.
-- Reset time: work out the next 00:00 in Asia/Kuala_Lumpur as an instant. If the device's time zone has the same offset then, the kicker says "Back at midnight". Otherwise it says "Back at [h am/pm] your time", formatted with the device's locale, for example "Back at 5 pm your time". Put this in one pure function with tests across time zones, including one where it lands on the next calendar day.
+- Reset time: work out the next 00:00 in Asia/Kuala_Lumpur as an instant. If the device's time zone has the same offset then, the kicker says "Back at midnight". Otherwise it says the time in the device's locale: "Back at 5 pm your time" on 12-hour devices, "Back at 17:00 your time" on 24-hour ones. Put this in one pure function with tests across time zones, including one where it lands on the next calendar day.
 
 ## Motion
 

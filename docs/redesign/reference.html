@@ -225,7 +225,7 @@ switch (state) {
     break;
   case "refused":
     faded = true;
-    middle = notice({ head: "Location is off", body: "Allow location to spin near you, or pick an area in Kota Kinabalu.", buttons: ["Try location again"],
+    middle = notice({ head: "Location is off", body: "Allow location to spin near you, or pick an area in Kota Kinabalu.", buttons: ["Spin", "Try location again"],
       extra: `<label class="field"><span>Pick an area in Kota Kinabalu</span><select class="select"><option>City centre</option><option>Likas</option><option>Inanam</option></select></label><p class="osm">Area centres © OpenStreetMap contributors</p>` });
     break;
   case "sheet":
