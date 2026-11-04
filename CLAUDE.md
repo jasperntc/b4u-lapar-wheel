@@ -14,8 +14,9 @@ Built4You episode 1. Allow location (or pick an area), set how far you'll go, fi
 
 ## Routing
 
-- Two Worker routes, `built4you.jasperntc.dev/lapar-wheel` and `built4you.jasperntc.dev/lapar-wheel/*`, in zone `jasperntc.dev`. No custom domain: the hostname belongs to the hub, and everything outside `/lapar-wheel` falls through to it.
-- The routes need the hub's DNS record, so the hub must be deployed before this Worker.
+- One Worker route, `built4you.jasperntc.dev/lapar-wheel*`, in zone `jasperntc.dev`. No custom domain: the hostname belongs to the hub, and everything outside `/lapar-wheel` falls through to it.
+- A route without a trailing `*` must match the whole URL, query string included. The old exact `/lapar-wheel` route missed share links (`/lapar-wheel?p=…`), which fell through to the hub's 404. A test checks the route against those URLs.
+- The route needs the hub's DNS record, so the hub must be deployed before this Worker.
 - `/lapar-wheel/api/*` runs the Worker script first (`run_worker_first`). Every other path is served from static assets.
 - Next writes `out/` at the root even with `basePath`, but requests arrive as `/lapar-wheel/...` and Workers static assets match the full path. `scripts/nest-out.mjs` (run by `postbuild`) copies `out/` into `dist/lapar-wheel/` and moves `_headers` to `dist/`, its only working place. Wrangler uploads `dist/`. A build test checks this layout.
 - `html_handling` is `drop-trailing-slash`, so `/lapar-wheel` serves the app and `/lapar-wheel/` redirects to it, matching `next/link`.
