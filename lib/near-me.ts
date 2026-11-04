@@ -40,23 +40,91 @@ export function filterSummary(f: { areaName: string | null; radiusKm: number; cu
   return `${where}, within ${f.radiusKm} km, ${kind}, ${f.ratingOn ? "rated 4.0 and up" : "any rating"}`;
 }
 
-const MESSAGES: Record<string, string> = {
-  rate_limited: "Slow down, try again in a minute.",
-  ip_daily_cap: "You’ve used today’s spins. Try again tomorrow.",
-  daily_cap: "Lapar Wheel is out of spins for today.",
+export type Filters = { radiusKm: number; cuisine: string; ratingOn: boolean };
+
+/** What a failed search shows. A cap gets the picture, the reset time and a Maps link; the rest get "Try again". */
+export type ErrorNotice = { headline: string; body: string | null; cap: boolean };
+
+const ERRORS: Record<string, ErrorNotice> = {
+  rate_limited: { headline: "Slow down", body: "Try again in a minute.", cap: false },
+  daily_cap: {
+    headline: "Out of spins for today",
+    body: "Lapar Wheel has a daily limit so it stays free. Spins come back at 12 am Malaysia time.",
+    cap: true,
+  },
+  ip_daily_cap: {
+    headline: "You’ve used today’s spins",
+    body: "Everyone gets 30 a day. They come back at 12 am Malaysia time.",
+    cap: true,
+  },
 };
 
-export function errorMessage(code: string): string {
-  return Object.hasOwn(MESSAGES, code) ? MESSAGES[code] : "Something went wrong, try again.";
+export function errorNotice(code: string): ErrorNotice {
+  return Object.hasOwn(ERRORS, code) ? ERRORS[code] : { headline: "Something went wrong", body: null, cap: false };
+}
+
+/** The nothing-open kicker: the active filters only, like "Within 10 km, Japanese, rated 4.0 and up". */
+export function emptyKicker(f: Filters): string {
+  return [`Within ${f.radiusKm} km`, f.cuisine && CUISINE_LABELS[f.cuisine], f.ratingOn && "rated 4.0 and up"]
+    .filter(Boolean)
+    .join(", ");
+}
+
+export function emptyBody(radiusKm: number): string | null {
+  return nextRadius(radiusKm) ? null : "That’s as far as it goes. Loosen a filter to see more.";
+}
+
+/** Each loosens one filter and spins at once, except maps, the way out when nothing is left to loosen. */
+export type EmptyAction = { kind: "radius"; km: number } | { kind: "cuisine" } | { kind: "rating" } | { kind: "maps" };
+
+/** The nothing-open buttons, in order, at most two: a bigger radius, any cuisine, any rating, else Google Maps. */
+export function emptyActions(f: Filters): EmptyAction[] {
+  const next = nextRadius(f.radiusKm);
+  const actions: EmptyAction[] = [
+    ...(next ? [{ kind: "radius", km: next } as const] : []),
+    ...(f.cuisine ? [{ kind: "cuisine" } as const] : []),
+    ...(f.ratingOn ? [{ kind: "rating" } as const] : []),
+  ];
+  return actions.length ? actions.slice(0, 2) : [{ kind: "maps" }];
+}
+
+export function actionLabel(a: EmptyAction): string {
+  return a.kind === "radius" ? `Try ${a.km} km` : a.kind === "cuisine" ? "Any cuisine" : a.kind === "rating" ? "Any rating" : FIND_FOOD;
+}
+
+export const FIND_FOOD = "Find food in Google Maps";
+
+/** A plain Google Maps search for food nearby: no API call, nothing stored. */
+export function foodSearchUrl(cuisine: string): string {
+  const query = cuisine && CUISINE_LABELS[cuisine] ? `${CUISINE_LABELS[cuisine]} restaurants` : "restaurants";
+  return `https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query })}`;
+}
+
+const DAY_MS = 86_400_000;
+const MALAYSIA_MS = 8 * 3_600_000; // UTC+8, no daylight saving, as worker/limits.ts resets the caps
+
+/**
+ * When spins come back, as the cap notice's kicker: the next 00:00 in Malaysia, said as "Back at midnight"
+ * where the device's clock agrees, otherwise as the device's local time ("Back at 5 pm your time").
+ * `timeZone` and `locale` default to the device's; tests pass them.
+ */
+export function resetKicker(now: Date, timeZone?: string, locale?: string): string {
+  const reset = new Date((Math.floor((now.getTime() + MALAYSIA_MS) / DAY_MS) + 1) * DAY_MS - MALAYSIA_MS);
+  const format = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(locale, { timeZone, ...o });
+  const parts = format({ hour: "numeric", minute: "2-digit", hourCycle: "h23" }).formatToParts(reset);
+  const hour = Number(parts.find((p) => p.type === "hour")?.value);
+  const minute = Number(parts.find((p) => p.type === "minute")?.value);
+  // Offsets differ by less than a day, so 00:00 on the device's clock means the same offset as Malaysia's.
+  if (hour % 24 === 0 && minute === 0) return "Back at midnight";
+  // "5 pm" in 12-hour locales; a 24-hour locale keeps its minutes ("17:00"), since a bare "17" reads oddly.
+  const twelveHour = /h1[12]/.test(format({ hour: "numeric" }).resolvedOptions().hourCycle ?? "");
+  const time = format({ hour: "numeric", ...((minute || !twelveHour) && { minute: "2-digit" }) }).format(reset);
+  return `Back at ${time} your time`;
 }
 
 /** Shown when location is refused. The KK area picker is offered only when we don't know the user is elsewhere. */
 export function refusedMessage(outsideKK: boolean): string {
   return outsideKK ? "Allow location to spin near you." : "Allow location to spin near you, or pick an area in Kota Kinabalu.";
-}
-
-export function emptyMessage(radiusKm: number): string {
-  return `Nothing open within ${radiusKm} km.`;
 }
 
 /** The next radius up, or null at the largest. */

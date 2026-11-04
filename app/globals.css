@@ -47,6 +47,13 @@
   --color-wheel-edge: var(--wheel-edge);
   --color-bulb: var(--bulb);
   --color-bulb-core: var(--bulb-core);
+  --color-paper: var(--paper);
+  --color-paper-ink: var(--paper-ink);
+  --color-paper-edge: var(--paper-edge);
+  --color-paper-kicker: var(--paper-kicker);
+  --color-paper-action: var(--paper-action);
+  --color-on-paper-action: var(--on-paper-action);
+  --color-tape: var(--tape);
 
   /* Same names as the tokens. The tokens' unlayered rules win over Tailwind's theme layer. */
   --font-sign: var(--font-sign);
@@ -55,16 +62,19 @@
   --shadow-panel: var(--shadow-panel);
   --shadow-card: var(--shadow-card);
   --shadow-spin: var(--shadow-spin);
+  --shadow-paper: var(--shadow-paper);
+  --shadow-tape: var(--shadow-tape);
 
   --radius-sign: 6px;
   --radius-panel: 12px;
   --radius-sheet: 18px;
+  --radius-paper: 4px;
 
   /* p-4 = --space-4, and so on. */
   --spacing: var(--space-1);
 
   /* Type roles from docs/redesign.md. No default sizes: only these exist. Bungee (font-sign) has
-     only capitals, so only title, place, spin-label and sheet-title use it. */
+     only capitals, so only title, place, spin-label, sheet-title and notice-title use it. */
   --text-*: initial;
   --text-title: 2rem;
   --text-title--line-height: 2.25rem;
@@ -86,6 +96,13 @@
   --text-kicker: 0.9375rem;
   --text-kicker--line-height: 1.25rem;
   --text-kicker--font-weight: 800;
+  --text-notice-title: 1.25rem;
+  --text-notice-title--line-height: 1.5rem;
+  --text-notice-kicker: 0.875rem;
+  --text-notice-kicker--line-height: 1.125rem;
+  --text-notice-kicker--font-weight: 800;
+  --text-notice-body: 0.9375rem;
+  --text-notice-body--line-height: 1.3125rem;
   --text-button: 1rem;
   --text-button--line-height: 1.25rem;
   --text-button--font-weight: 600;
@@ -247,6 +264,39 @@ body::before {
   }
 }
 
+/* A notice's picture: its cream edges feather into the paper. */
+.feathered {
+  mask-image: radial-gradient(circle, black 58%, transparent 71%);
+}
+
+/* Notices: the wheel has nothing to land on, so it fades back. Out of spins at night, the stall
+   closes instead: the wheel darkens and data-closed on <html> turns the roof bulbs and neon off.
+   Each fades over 400 ms going off, with no flicker, and comes straight back on. */
+.wheel-dim {
+  filter: saturate(0.2);
+  opacity: 0.5;
+  transition: filter 400ms ease-out, opacity 400ms ease-out;
+}
+
+[data-look="night"][data-closed] .wheel-dim {
+  filter: brightness(0.45) saturate(0.5);
+  opacity: 1;
+}
+
+[data-look="night"][data-closed] .lamp {
+  background-color: var(--lamp-off);
+  box-shadow: none;
+  animation: none;
+  transition: background-color 400ms ease-out, box-shadow 400ms ease-out;
+}
+
+[data-look="night"][data-closed] .title {
+  color: var(--title-off);
+  text-shadow: none;
+  animation: none;
+  transition: color 400ms ease-out, text-shadow 400ms ease-out;
+}
+
 /* The result card rises 8px and fades in over 180 ms. */
 @keyframes rise {
   from {
@@ -269,7 +319,10 @@ body::before {
   }
 
   .sheet,
-  .sheet::backdrop {
+  .sheet::backdrop,
+  .wheel-dim,
+  [data-look="night"][data-closed] .lamp,
+  [data-look="night"][data-closed] .title {
     transition: none;
   }
 }

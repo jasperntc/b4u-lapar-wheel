@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en" data-look="day">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lapar Wheel: design reference</title>
+<!--
+  Design reference for the Lapar Wheel redesign (2026-11-04). Not part of the app and never shipped.
+  Open it straight from the repo (file://) or any static server rooted at the repo.
+  Pick a screen with the bar at the top, or with ?s=<state>&look=<day|night>.
+  docs/redesign.md is the source of truth; this page and docs/redesign/screens/ show how it should look.
+-->
+<style>
+@font-face{font-family:Bungee;src:url("../../public/fonts/Bungee-latin-400.woff2") format("woff2")}
+@font-face{font-family:Figtree;font-weight:400;src:url("../../public/fonts/Figtree-latin-400.woff2") format("woff2")}
+@font-face{font-family:Figtree;font-weight:600;src:url("../../public/fonts/Figtree-latin-600.woff2") format("woff2")}
+@font-face{font-family:Figtree;font-weight:800;src:url("../../public/fonts/Figtree-latin-800.woff2") format("woff2")}
+
+[data-look="day"]{color-scheme:light;--ground:#f7f8f4;--ink:#1d1d1b;--ink-soft:#4a4a44;--panel:#ffffff;--panel-border:2px solid #1d1d1b;--panel-shadow:0 4px 0 #1d1d1b;--card-border:2px solid #1d1d1b;--card-shadow:0 4px 0 #1d1d1b;--spin-bg:#c8342b;--spin-ink:#ffffff;--spin-border:2px solid #1d1d1b;--spin-shadow:0 4px 0 #1d1d1b;--maps-bg:#1f6b4a;--maps-ink:#ffffff;--accent:#1f6b4a;--on-accent:#ffffff;--focus:#1d1d1b;--kicker-paper:#1f6b4a;--chip-off-bg:#ffffff;--chip-off-border:2px solid #1d1d1b}
+[data-look="night"]{color-scheme:dark;--ground:#1a1530;--ink:#f3e9d8;--ink-soft:#c9bfd9;--panel:#241e3d;--panel-border:1.5px solid #3d3660;--panel-shadow:none;--card-border:1.5px solid #ffd23f;--card-shadow:0 0 28px rgba(255,210,63,0.18);--spin-bg:#ff4f8b;--spin-ink:#1a1530;--spin-border:2px solid #1a1530;--spin-shadow:0 0 24px rgba(255,79,139,0.55);--maps-bg:#ff4f8b;--maps-ink:#1a1530;--accent:#ffd23f;--on-accent:#1a1530;--focus:#ffd23f;--kicker-paper:#5b3fd9;--chip-off-bg:transparent;--chip-off-border:1.5px solid #f3e9d8}
+
+*{box-sizing:border-box}
+body{margin:0;background:#8a8a8a;font-family:Figtree,system-ui,sans-serif}
+.bar{display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:#222;font:13px system-ui;color:#fff}
+.bar a{color:#fff;padding:2px 6px;border:1px solid #666;border-radius:4px;text-decoration:none}
+.bar a[aria-current]{background:#fff;color:#222}
+.shot .bar{display:none}
+.phone{position:relative;width:390px;min-height:844px;margin:0 auto;overflow:hidden;display:flex;flex-direction:column;color:var(--ink);background-color:var(--ground)}
+[data-look="day"] .phone{background-image:url("../../public/images/textures/wall-green-band.png"),url("../../public/images/textures/wall-day.png");background-repeat:repeat-x,repeat;background-position:left bottom,left top}
+[data-look="night"] .phone{background-image:radial-gradient(circle at 50% 38%,rgba(255,154,60,0.18),transparent 62%)}
+.awning{height:44px;flex:none;background:url("../../public/images/textures/awning-day.png") repeat-x left top}
+[data-look="night"] .awning{background-image:url("../../public/images/textures/awning-night.png")}
+.lamps{height:15px;flex:none;display:flex;justify-content:space-between;align-items:flex-start;padding:2px 14px 0}
+.lamp{width:14px;height:7px;border-radius:7px 7px 0 0;background:#1f6b4a;box-shadow:0 2px 0 #fff3cf}
+[data-look="night"] .lamp{width:9px;height:9px;margin-top:3px;border-radius:50%;background:#ffd98a;box-shadow:0 0 10px 3px rgba(255,217,138,0.55)}
+.closed[data-look="night"] .lamp{background:#4a4560;box-shadow:none}
+.content{position:relative;flex:1;display:flex;flex-direction:column;gap:12px;padding:12px 16px 16px}
+[data-look="day"] .content{padding-bottom:64px}
+.header{height:96px;flex:none;display:flex;flex-direction:column;justify-content:center}
+.sign{border-radius:6px;box-shadow:0 4px 0 #134430;background:#1f6b4a url("../../public/images/signboard-day.jpg") 0 0/100% 100% no-repeat;padding:16px 20px 15px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.title{margin:0;font-family:Bungee,sans-serif;font-weight:400;font-size:32px;line-height:36px;letter-spacing:.02em;color:#eef3ec;filter:url(#paint)}
+.sub{margin:0;font-size:14px;line-height:20px;font-weight:600;color:#eef3ec}
+[data-look="night"] .sign{background:none;box-shadow:none;padding:0;gap:4px}
+[data-look="night"] .title{color:#ffe7f0;text-shadow:0 0 6px #ff4f8b,0 0 18px #ff4f8b;filter:none}
+.closed[data-look="night"] .title{color:#8a7f9e;text-shadow:none}
+[data-look="night"] .sub{color:#f3e9d8}
+.sub-night{display:none}[data-look="night"] .sub-day{display:none}[data-look="night"] .sub-night{display:block}
+.wheel{display:flex;justify-content:center;flex:none}
+.wheel.faded{filter:saturate(.2);opacity:.5}
+.closed[data-look="night"] .wheel.faded{filter:brightness(.45) saturate(.5);opacity:1}
+.panel{background:var(--panel);border:var(--panel-border);box-shadow:var(--panel-shadow);border-radius:12px}
+.summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:8px 16px;font:inherit;font-size:16px;line-height:22px;color:var(--ink);text-align:left;width:100%}
+.change{font-weight:800;text-decoration:underline;color:var(--accent);white-space:nowrap}
+[data-look="day"] .change{color:#1f6b4a}
+.spin{min-height:60px;width:100%;border-radius:999px;font-family:Bungee,sans-serif;font-size:24px;letter-spacing:.04em;background:var(--spin-bg);color:var(--spin-ink);border:var(--spin-border);box-shadow:var(--spin-shadow)}
+.hint{margin:0;text-align:center;font-size:13px;line-height:18px}
+.card{background:var(--panel);border:var(--card-border);box-shadow:var(--card-shadow);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.kicker{margin:0;font-weight:800;font-size:15px;line-height:20px;color:var(--accent)}
+[data-look="day"] .kicker{color:#1f6b4a}
+.place{margin:0;font-family:Bungee,sans-serif;font-weight:400;font-size:28px;line-height:32px}
+[data-look="night"] .place{color:#ffffff}
+.meta{margin:0;font-size:16px;line-height:22px}
+.btn{min-height:48px;padding:0 16px;border-radius:999px;font:inherit;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer}
+.maps{background:var(--maps-bg);color:var(--maps-ink);border:var(--spin-border);font-weight:800}
+.ghost{background:var(--chip-off-bg);color:var(--ink);border:var(--chip-off-border)}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.attrib{margin:0;font-size:13px;line-height:18px;color:var(--ink-soft)}
+.footer{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;line-height:18px}
+.footer-row{display:flex;align-items:center;justify-content:center;gap:12px}
+.seg{display:flex;gap:4px}
+.pill{min-height:32px;padding:0 10px;border-radius:999px;font:inherit;font-size:13px;display:inline-flex;align-items:center;color:var(--ink);background:var(--chip-off-bg);border:1.5px solid var(--ink)}
+[data-look="night"] .pill{border-color:#3d3660}
+.pill[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.credit{display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px}
+.tag{fill:#3b3c8c;stroke:#3b3c8c}[data-look="night"] .tag{fill:#abadf2;stroke:#abadf2}
+
+.notice{position:relative;margin-top:4px;padding:16px;border-radius:4px;display:flex;flex-direction:column;gap:12px;background:#f6e8cc;color:#1d1d1b}
+[data-look="day"] .notice{border:2px solid #1d1d1b;box-shadow:0 4px 0 #1d1d1b}
+[data-look="night"] .notice{border:2px solid #1a1530;box-shadow:0 0 0 1px rgba(255,217,138,0.25),0 0 36px rgba(255,217,138,0.28)}
+.tape{position:absolute;top:-11px;left:50%;width:88px;height:22px;transform:translateX(-50%) rotate(-3deg);background:rgba(255,250,232,0.78);box-shadow:0 1px 2px rgba(0,0,0,0.12)}
+.notice-top{display:flex;align-items:center;gap:12px}
+.pic{flex:none;-webkit-mask-image:radial-gradient(circle,#000 58%,transparent 71%);mask-image:radial-gradient(circle,#000 58%,transparent 71%)}
+.nkicker{margin:0;font-weight:800;font-size:14px;line-height:18px;color:var(--kicker-paper)}
+.nhead{margin:0;font-family:Bungee,sans-serif;font-weight:400;font-size:20px;line-height:24px}
+.nbody{margin:0;font-size:15px;line-height:21px}
+.notice .btn-primary{background:#1f6b4a;color:#ffffff;border:2px solid #1d1d1b;font-weight:800}
+[data-look="night"] .notice .btn-primary{background:#ff4f8b;color:#1a1530;border-color:#1a1530}
+.notice .btn-outline{background:transparent;color:#1d1d1b;border:2px solid #1d1d1b}
+.linkbtn{align-self:center;background:none;border:0;padding:4px;font:inherit;font-size:15px;font-weight:600;color:#1d1d1b;text-decoration:underline;text-underline-offset:3px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field span{font-size:14px;line-height:20px;color:#4a4a44}
+.select{height:48px;padding:0 12px;border-radius:10px;font:inherit;font-size:16px;border:2px solid #1d1d1b;background:#ffffff;color:#1d1d1b}
+.osm{margin:0;font-size:13px;line-height:18px;color:#4a4a44}
+
+.backdrop{position:absolute;inset:0;background:rgba(20,16,30,0.55)}
+.sheet{position:absolute;left:0;right:0;bottom:0;padding:20px 16px 24px;border-radius:18px 18px 0 0;display:flex;flex-direction:column;gap:16px;background:#ffffff;color:#1d1d1b;border-top:2px solid #1d1d1b}
+[data-look="night"] .sheet{background:#241e3d;color:#f3e9d8;border-top:1.5px solid #ffd23f}
+[data-look="night"] .sheet .select{border:1.5px solid #f3e9d8;background:#1a1530;color:#f3e9d8}
+[data-look="night"] .sheet .field span,[data-look="night"] .sheet .osm{color:#c9bfd9}
+.sheet h2{margin:0;font-family:Bungee,sans-serif;font-weight:400;font-size:22px;line-height:28px}
+.sheet-head{display:flex;align-items:center;justify-content:space-between}
+.small-ghost{min-height:36px;padding:0 12px;border-radius:999px;font:inherit;font-size:14px;font-weight:600;background:transparent;color:inherit;border:1.5px solid currentColor}
+.label{margin:0;font-weight:800;font-size:16px;line-height:22px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:0 14px;border-radius:999px;font:inherit;font-size:15px;font-weight:600;background:var(--chip-off-bg);color:var(--ink);border:var(--chip-off-border)}
+.chip[aria-checked="true"]{background:var(--accent);color:var(--on-accent);border:2px solid var(--accent)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;border:0;background:none;padding:0;font:inherit;font-size:16px;font-weight:600;color:inherit;text-align:left}
+.knob{min-width:52px;padding:6px 0;text-align:center;border-radius:999px;font-size:14px;font-weight:800;background:var(--accent);color:var(--on-accent)}
+.done{min-height:52px;border-radius:999px;font:inherit;font-size:17px;font-weight:800;background:var(--spin-bg);color:var(--spin-ink);border:var(--spin-border)}
+.where{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<filter id="paint"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="2.2"/></filter>
+</svg>
+<nav class="bar" id="bar"></nav>
+<div id="app"></div>
+<script>
+const STATES = {
+  start: "Start", result: "Result", sheet: "Filter sheet", "empty-2": "Nothing open, 2 km", "empty-10": "Nothing open, 10 km",
+  "cap": "Out of spins (everyone)", "ip-cap": "Out of spins (you)", "rate": "Slow down", refused: "Location refused",
+};
+const q = new URLSearchParams(location.search);
+const state = STATES[q.get("s")] ? q.get("s") : "start";
+const look = q.get("look") === "night" ? "night" : "day";
+document.documentElement.dataset.look = look;
+if (q.has("shot")) document.body.classList.add("shot");
+
+const NAMES = ["Kopitiam Sinar", "Mee Sapi Corner", "Dim Sum House", "Satay Lane", "Pier Seafood", "Nasi Lemak Hut", "Ramen Bar", "Bak Kut Teh 88", "Tuaran Mee", "Roti Canai", "Hinava House", "Laksa Kitchen"];
+const FILLS = { day: ["#1f6b4a", "#eef3ec", "#c8342b", "#e9a825", "#2a7f86", "#9cc9a6"], night: ["#ff4f8b", "#ffd23f", "#2fd1c4", "#5b3fd9", "#ff9a3c", "#9be15d"] };
+const INKS = { day: ["#ffffff", "#1d1d1b", "#ffffff", "#1d1d1b", "#ffffff", "#1d1d1b"], night: ["#1a1530", "#1a1530", "#1a1530", "#ffffff", "#1a1530", "#1a1530"] };
+
+function colourIndex(i, n) { return n > 1 && n % 6 === 1 && i === n - 1 ? 2 : i % 6; }
+function pt(deg, r) { const a = deg * Math.PI / 180; return (150 + r * Math.sin(a)).toFixed(2) + " " + (150 - r * Math.cos(a)).toFixed(2); }
+
+function wheel(names, pick) {
+  const night = look === "night";
+  const n = names.length, seg = 360 / n, R = night ? 140 : 120;
+  const rot = pick == null ? 0 : 360 - (pick + 0.5) * seg;
+  let segs = "";
+  names.forEach((name, i) => {
+    const c = colourIndex(i, n), mid = (i + 0.5) * seg;
+    segs += `<path d="M150 150 L${pt(i * seg, R)} A${R} ${R} 0 0 1 ${pt((i + 1) * seg, R)} Z" fill="${FILLS[look][c]}" stroke="${night ? "#1a1530" : "#1d1d1b"}" stroke-width="2"/>`;
+    if (name) segs += `<text x="${150 + R - 8}" y="150" transform="rotate(${mid - 90} 150 150)" text-anchor="end" dominant-baseline="central" font-family="Figtree" font-weight="600" font-size="12" fill="${INKS[look][c]}">${name.length > 13 ? name.slice(0, 12) + "…" : name}</text>`;
+  });
+  const rim = night ? "" : `<image href="../../public/images/wheel-rim-day.png" x="0" y="0" width="300" height="300"/>`;
+  let bulbs = "";
+  if (night) for (let k = 0; k < 24; k++) { const a = Math.PI * 2 * k / 24, x = 150 + 145 * Math.cos(a), y = 150 + 145 * Math.sin(a); bulbs += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5" fill="#ffd98a" opacity="0.45"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="#fff3cf"/>`; }
+  return `<svg width="300" height="300" viewBox="0 0 300 300" aria-hidden="true">
+    <defs><radialGradient id="sheen" cx="35%" cy="28%" r="70%"><stop offset="0%" stop-color="#fff" stop-opacity=".35"/><stop offset="45%" stop-color="#fff" stop-opacity=".06"/><stop offset="100%" stop-color="#000" stop-opacity=".12"/></radialGradient></defs>
+    ${night ? `<circle cx="150" cy="150" r="149" fill="#2a2540" stroke="#3d3660" stroke-width="2"/>` : `<circle cx="150" cy="150" r="149" fill="none" stroke="#1f6b4a" stroke-width="2"/>`}
+    <g transform="rotate(${rot} 150 150)">${rim}${segs}</g>
+    <circle cx="150" cy="150" r="${R}" fill="url(#sheen)"/>
+    <circle cx="150" cy="150" r="${R}" fill="none" stroke="${night ? "#2a2540" : "#1d1d1b"}" stroke-width="${night ? 6 : 2}"/>
+    ${bulbs}
+    <circle cx="150" cy="150" r="${night ? 24 : 20}" fill="${night ? "#1a1530" : "#eef3ec"}" stroke="${night ? "#ffd98a" : "#1f6b4a"}" stroke-width="3"/>
+    <polygon points="${night ? "139,0 161,0 150,24" : "139,0 161,0 150,32"}" fill="${night ? "#ff4f8b" : "#c8342b"}" stroke="${night ? "#1a1530" : "#1d1d1b"}" stroke-width="1.5"/>
+  </svg>`;
+}
+
+const BLANK = Array.from({ length: 10 }, () => "");
+const tag = `<svg aria-hidden="true" width="14" height="14" viewBox="0 0 32 32"><path class="tag" fill-rule="evenodd" stroke-width="2" stroke-linejoin="round" d="M6 8 L12 2 L20 2 L26 8 L26 30 L6 30 Z M13.8 8 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 Z"/></svg>`;
+const footer = `<footer class="footer">
+  <div class="footer-row">
+    <div class="seg" role="group" aria-label="Look"><button class="pill" aria-pressed="true">Auto</button><button class="pill" aria-pressed="false">Day</button><button class="pill" aria-pressed="false">Night</button></div>
+    <button class="pill" aria-pressed="true">Sound on</button>
+  </div>
+  <a class="credit" href="#">${tag}Built4You, episode 1</a>
+</footer>`;
+const controls = `<button class="panel summary" aria-haspopup="dialog"><span>Near you, within 2 km, any cuisine, rated 4.0 and up</span><span class="change">Change</span></button>
+  <button class="spin">SPIN</button>
+  <p class="hint">Or swipe the wheel</p>`;
+
+function notice({ pic, kicker, head, body, buttons = [], link, extra = "" }) {
+  return `<section class="notice" role="status">
+    <span class="tape" aria-hidden="true"></span>
+    <div class="notice-top">
+      ${pic ? `<img class="pic" src="../../public/images/${pic}" alt="" width="104" height="104">` : ""}
+      <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+        ${kicker ? `<p class="nkicker">${kicker}</p>` : ""}
+        <h2 class="nhead">${head}</h2>
+      </div>
+    </div>
+    ${body ? `<p class="nbody">${body}</p>` : ""}
+    ${extra}
+    ${buttons.length ? `<div class="${buttons.length > 1 ? "row2" : ""}" style="display:grid;gap:8px">${buttons.map((b, i) => `<button class="btn ${i === 0 ? "btn-primary" : "btn-outline"}">${b}</button>`).join("")}</div>` : ""}
+    ${link ? `<button class="linkbtn">${link}</button>` : ""}
+  </section>`;
+}
+
+const capPic = look === "night" ? "spot-stall-night.jpg" : "spot-shutter-day.jpg";
+let middle = "", wheelNames = BLANK, pick = null, faded = false, closed = false, overlay = "";
+switch (state) {
+  case "result":
+    wheelNames = NAMES; pick = 4;
+    middle = `<section class="card" role="status">
+      <p class="kicker">Go makan at</p>
+      <h2 class="place">Pier Seafood</h2>
+      <p class="meta">650 m away, open now.</p>
+      <a class="btn maps" href="#">Open in Maps</a>
+      <div class="row2"><button class="btn ghost">Spin again</button><button class="btn ghost">Filters</button></div>
+      <p class="attrib">Google Maps</p>
+    </section>`;
+    break;
+  case "empty-2":
+    faded = true;
+    middle = notice({ pic: "spot-empty-cup.jpg", kicker: "Within 2 km, rated 4.0 and up", head: "Nothing open nearby", buttons: ["Try 5 km", "Any rating"], link: "Change filters" });
+    break;
+  case "empty-10":
+    faded = true;
+    middle = notice({ pic: "spot-empty-cup.jpg", kicker: "Within 10 km, Japanese, rated 4.0 and up", head: "Nothing open nearby", body: "That's as far as it goes. Loosen a filter to see more.", buttons: ["Any cuisine", "Any rating"], link: "Change filters" });
+    break;
+  case "cap":
+    faded = true; closed = true;
+    middle = notice({ pic: capPic, kicker: "Back at midnight", head: "Out of spins for today", body: "Lapar Wheel has a daily limit so it stays free. Spins come back at 12 am Malaysia time.", buttons: ["Find food in Google Maps"] });
+    break;
+  case "ip-cap":
+    faded = true; closed = true;
+    middle = notice({ pic: capPic, kicker: "Back at 5 pm your time", head: "You've used today's spins", body: "Everyone gets 30 a day. They come back at 12 am Malaysia time.", buttons: ["Find food in Google Maps"] });
+    break;
+  case "rate":
+    faded = true;
+    middle = notice({ head: "Slow down", body: "Try again in a minute.", buttons: ["Try again"] });
+    break;
+  case "refused":
+    faded = true;
+    middle = notice({ head: "Location is off", body: "Allow location to spin near you, or pick an area in Kota Kinabalu.", buttons: ["Try location again"],
+      extra: `<label class="field"><span>Pick an area in Kota Kinabalu</span><select class="select"><option>City centre</option><option>Likas</option><option>Inanam</option></select></label><p class="osm">Area centres © OpenStreetMap contributors</p>` });
+    break;
+  case "sheet":
+    middle = controls;
+    overlay = `<div class="backdrop"></div>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-head"><h2 id="sheet-title">Filters</h2><button class="small-ghost">Reset</button></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <p class="label">Where</p>
+        <div class="where"><button class="chip" aria-checked="true">Near me</button><span>Using your location.</span></div>
+        <p class="osm">Your location is only used for this search. It's never stored.</p>
+      </div>
+      <div role="radiogroup" aria-label="How far?" style="display:flex;flex-direction:column;gap:8px">
+        <p class="label">How far?</p>
+        <div class="chips"><button class="chip" role="radio" aria-checked="false">1 km</button><button class="chip" role="radio" aria-checked="true">2 km</button><button class="chip" role="radio" aria-checked="false">5 km</button><button class="chip" role="radio" aria-checked="false">10 km</button></div>
+      </div>
+      <label class="field"><p class="label">What kind?</p><select class="select"><option>Any cuisine</option></select></label>
+      <button class="switch" role="switch" aria-checked="true"><span>Rated 4.0 and up</span><span class="knob">On</span></button>
+      <button class="done">Done</button>
+    </section>`;
+    break;
+  default:
+    middle = controls;
+}
+
+document.getElementById("app").innerHTML = `<div class="phone ${closed ? "closed" : ""}" data-look="${look}">
+  <div class="awning" aria-hidden="true"></div>
+  <div class="lamps" aria-hidden="true">${'<span class="lamp"></span>'.repeat(13)}</div>
+  <main class="content">
+    <div class="header"><header class="sign"><h1 class="title">LAPAR WHEEL</h1><p class="sub sub-day">Can't decide? Spin, then go makan.</p><p class="sub sub-night">Dinner or supper? Spin for what's still open.</p></header></div>
+    <div class="wheel ${faded ? "faded" : ""}">${wheel(wheelNames, pick)}</div>
+    ${middle}
+    ${footer}
+  </main>
+  ${overlay}
+</div>`;
+
+const bar = document.getElementById("bar");
+for (const lk of ["day", "night"]) for (const [id, label] of Object.entries(STATES)) {
+  const a = document.createElement("a");
+  a.href = `?s=${id}&look=${lk}`;
+  a.textContent = `${lk === "day" ? "Day" : "Night"}: ${label}`;
+  if (id === state && lk === look) a.setAttribute("aria-current", "page");
+  bar.append(a);
+}
+</script>
+</body>
+</html>

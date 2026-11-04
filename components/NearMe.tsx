@@ -1,41 +1,48 @@
 "use client";
 
-import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { areas, KK_BOX } from "@/content/areas";
 import {
   CUISINE_LABELS,
   DEFAULT_RADIUS_KM,
+  FIND_FOOD,
   RADII_KM,
-  emptyMessage,
-  errorMessage,
+  actionLabel,
+  emptyActions,
+  emptyBody,
+  emptyKicker,
+  errorNotice,
   filterSummary,
+  foodSearchUrl,
   formatDistance,
   mapsUrl,
-  nextRadius,
   refusedMessage,
+  resetKicker,
   searchNearby,
   awaitSpin,
   cachedPlaces,
   wheelRotation,
+  type EmptyAction,
+  type Filters,
   type NearbyRequest,
   type Place,
   type SpinCache,
 } from "@/lib/near-me";
 import { pickIndex } from "@/lib/pick";
 import { AreaPicker, field } from "./AreaPicker";
-import { Button } from "./Button";
+import { Button, buttonClass } from "./Button";
+import { Notice } from "./Notice";
 import { Wheel } from "./Wheel";
 
 type Centre = { lat: number; lon: number };
-type Notice = { text: string; retryRadius: number | null; picture: "empty" | "cap" | null };
+// Nothing open reads the current filters: they only change through the sheet, whose close clears the notice.
+type Shown = { kind: "empty" } | { kind: "error"; code: string };
 
 // "/lapar-wheel/": a plain fetch path doesn't get the basePath on its own.
 const base = import.meta.env.BASE_URL;
 const MAX_SEGMENTS = 20;
 const chip =
   "inline-flex min-h-11 cursor-pointer items-center rounded-full border-(length:--edge) border-ghost-edge bg-ghost px-4 text-button text-ink has-checked:border-accent has-checked:bg-accent has-checked:text-on-accent has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus";
-const picture = "size-40 rounded-panel border-(length:--edge) border-panel-edge";
 
 const insideKK = ({ lat, lon }: Centre) =>
   lat >= KK_BOX.south && lat <= KK_BOX.north && lon >= KK_BOX.west && lon <= KK_BOX.east;
@@ -68,7 +75,7 @@ export function NearMe() {
   const [rotation, setRotation] = useState(0);
   const [busy, setBusy] = useState(false);
   const [pick, setPick] = useState<Place | null>(null);
-  const [notice, setNotice] = useState<Notice | null>(null);
+  const [notice, setNotice] = useState<Shown | null>(null);
   // Refs, so a second tap in the same tick can't start a second spin.
   const busyRef = useRef(false);
   const cache = useRef<SpinCache | null>(null);
@@ -109,7 +116,9 @@ export function NearMe() {
     done();
   }
 
-  async function spin(radius = radiusKm) {
+  /** Spins with the current filters, or with `over` when a notice's button has just changed one. */
+  async function spin(over: Partial<Filters> = {}) {
+    const f = { radiusKm, cuisine, ratingOn, ...over };
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
@@ -122,17 +131,16 @@ export function NearMe() {
     const request: NearbyRequest = {
       lat: centre.lat,
       lon: centre.lon,
-      radiusKm: radius,
-      ...(cuisine && { cuisine }),
-      ...(!ratingOn && { minRating: null }),
+      radiusKm: f.radiusKm,
+      ...(f.cuisine && { cuisine: f.cuisine }),
+      ...(!f.ratingOn && { minRating: null }),
     };
     const key = JSON.stringify(request);
     let list = cachedPlaces(cache.current, key);
     if (!list) {
       const result = await searchNearby(request, base);
       if (!result.ok) {
-        const cap = result.error === "daily_cap" || result.error === "ip_daily_cap";
-        setNotice({ text: errorMessage(result.error), retryRadius: null, picture: cap ? "cap" : null });
+        setNotice({ kind: "error", code: result.error });
         return done();
       }
       list = result.places.slice(0, MAX_SEGMENTS);
@@ -140,7 +148,7 @@ export function NearMe() {
       setPlaces(list);
     }
     if (!list.length) {
-      setNotice({ text: emptyMessage(radius), retryRadius: nextRadius(radius), picture: "empty" });
+      setNotice({ kind: "empty" });
       return done();
     }
 
@@ -153,9 +161,12 @@ export function NearMe() {
     spinEnd.current = awaitSpin(finishSpin, skip);
   }
 
-  function tryRadius(next: number) {
-    setRadiusKm(next);
-    void spin(next);
+  /** A nothing-open button: loosen that one filter and spin at once. */
+  function loosen(a: EmptyAction) {
+    if (a.kind === "radius") setRadiusKm(a.km);
+    if (a.kind === "cuisine") setCuisine("");
+    if (a.kind === "rating") setRatingOn(false);
+    void spin(a.kind === "radius" ? { radiusKm: a.km } : a.kind === "cuisine" ? { cuisine: "" } : { ratingOn: false });
   }
 
   function openSheet() {
@@ -180,10 +191,23 @@ export function NearMe() {
   }
 
   const showRefused = refused && !busy && !pick && !notice;
+  const error = notice?.kind === "error" ? errorNotice(notice.code) : null;
+  const closed = Boolean(error?.cap);
+
+  // Out of spins, the night stall closes: the roof bulbs and neon title (in app/page.tsx) go off.
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-closed", closed);
+  }, [closed]);
+
+  const findFood = (variant: "paper" | "paper-outline") => (
+    <a key="maps" href={foodSearchUrl(cuisine)} target="_blank" rel="noopener noreferrer" className={buttonClass(variant)}>
+      {FIND_FOOD}
+    </a>
+  );
 
   return (
     <div className="flex flex-col gap-3">
-      <section aria-label="Wheel">
+      <section aria-label="Wheel" className={notice || showRefused ? "wheel-dim" : undefined}>
         <Wheel
           names={places.map((p) => p.name)}
           rotation={rotation}
@@ -220,57 +244,94 @@ export function NearMe() {
             </p>
           </article>
         )}
-        {notice && (
-          <div className="panel flex flex-col items-start gap-3 p-4">
-            {notice.picture === "empty" && (
-              <Image src={`${base}images/spot-empty-cup.jpg`} alt="" width={160} height={160} className={picture} />
+        {notice?.kind === "empty" && (
+          <Notice
+            picture="empty"
+            kicker={emptyKicker({ radiusKm, cuisine, ratingOn })}
+            headline="Nothing open nearby"
+            body={emptyBody(radiusKm)}
+            actions={emptyActions({ radiusKm, cuisine, ratingOn }).map((a, i) =>
+              a.kind === "maps" ? (
+                findFood("paper")
+              ) : (
+                <Button key={a.kind} variant={i ? "paper-outline" : "paper"} onClick={() => loosen(a)}>
+                  {actionLabel(a)}
+                </Button>
+              ),
             )}
-            {notice.picture === "cap" && (
-              <>
-                <Image src={`${base}images/spot-shutter-day.jpg`} alt="" width={160} height={160} className={`${picture} night:hidden`} />
-                <Image src={`${base}images/spot-stall-night.jpg`} alt="" width={160} height={160} className={`${picture} day:hidden`} />
-              </>
-            )}
-            <p>{notice.text}</p>
-            {notice.retryRadius && (
-              <Button onClick={() => tryRadius(notice.retryRadius as number)} disabled={busy}>
-                Try {notice.retryRadius} km?
-              </Button>
-            )}
-          </div>
-        )}
-        {showRefused && (
-          <div className="panel flex flex-col items-start gap-3 p-4">
-            <p>{refusedMessage(outsideKK)}</p>
-            {mode === "area" && (
-              <div className="w-full">
-                <AreaPicker areaId={areaId} onChange={setAreaId} />
-              </div>
-            )}
-            <Button onClick={() => void askLocation()} disabled={locating}>
-              {locating ? "Finding you…" : "Try location again"}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {!pick && (
-        <>
-          {!notice && !showRefused && (
+          >
             <button
-              ref={summary}
               type="button"
               aria-haspopup="dialog"
               onClick={openSheet}
-              disabled={busy}
-              className="panel flex min-h-13 w-full items-center justify-between gap-3 px-4 py-2 text-left disabled:cursor-wait"
+              className="min-h-11 cursor-pointer self-center px-3 text-notice-body font-semibold underline underline-offset-3"
             >
-              <span>
-                {filterSummary({ areaName: mode === "area" ? area.name : null, radiusKm, cuisine, ratingOn })}
-              </span>
-              <span className="font-extrabold text-accent underline underline-offset-4">Change</span>
+              Change filters
             </button>
-          )}
+          </Notice>
+        )}
+        {error && (
+          <Notice
+            picture={error.cap ? "cap" : undefined}
+            kicker={error.cap ? resetKicker(new Date()) : undefined}
+            headline={error.headline}
+            body={error.body}
+            actions={
+              error.cap ? (
+                findFood("paper")
+              ) : (
+                <Button variant="paper" onClick={() => void spin()}>
+                  Try again
+                </Button>
+              )
+            }
+          />
+        )}
+        {showRefused && (
+          <Notice
+            headline="Location is off"
+            body={
+              <div className="flex flex-col gap-3">
+                <p>{refusedMessage(outsideKK)}</p>
+                {mode === "area" && <AreaPicker areaId={areaId} onChange={setAreaId} />}
+              </div>
+            }
+            actions={
+              <>
+                {/* The Spin button hides while a notice shows, so the area picker brings its own. */}
+                {mode === "area" && (
+                  <Button variant="paper" onClick={() => void spin()}>
+                    Spin
+                  </Button>
+                )}
+                <Button
+                  variant={mode === "area" ? "paper-outline" : "paper"}
+                  onClick={() => void askLocation()}
+                  disabled={locating}
+                >
+                  {locating ? "Finding you…" : "Try location again"}
+                </Button>
+              </>
+            }
+          />
+        )}
+      </div>
+
+      {!pick && !notice && !showRefused && (
+        <>
+          <button
+            ref={summary}
+            type="button"
+            aria-haspopup="dialog"
+            onClick={openSheet}
+            disabled={busy}
+            className="panel flex min-h-13 w-full items-center justify-between gap-3 px-4 py-2 text-left disabled:cursor-wait"
+          >
+            <span>
+              {filterSummary({ areaName: mode === "area" ? area.name : null, radiusKm, cuisine, ratingOn })}
+            </span>
+            <span className="font-extrabold text-accent underline underline-offset-4">Change</span>
+          </button>
           <Button variant="spin" onClick={() => void spin()} disabled={busy} aria-busy={busy}>
             {busy ? "Spinning…" : "Spin"}
           </Button>

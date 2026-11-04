@@ -86,7 +86,7 @@ One centred column, at most 390px wide, on a full-width ground. Top to bottom:
    - The summary reads like "Near you, within 2 km, any cuisine, rated 4.0 and up", with "In [area]" instead of "Near you" in area mode. It ends with an underlined "Change" and opens the filter sheet.
 6. **Result card** replaces the controls once the wheel lands: kicker "Go makan at", the name, "[distance] away, open now.", a full-width Open in Maps button, then Spin again and Filters side by side, then "Google Maps" in small print (attribution, same container).
 7. **Notices** replace the controls when there's no pick (see below).
-8. **Footer**: the Look switch (Auto / Day / Night, a segmented control) and a Sound on/off toggle on one row. Under it, a small "Built4You, episode 1" credit linking to the hub, with the gift-tag mark.
+8. **Footer**, centred: the Look switch (Auto / Day / Night) with the Sound toggle beside it (Sound arrives in PR 2), and under them the "Built4You, episode 1" credit with the tag mark. In the day look the footer stays above the green tile band.
 
 ## Wheel
 
@@ -111,16 +111,36 @@ If any filter changed when the sheet closes, clear the shown result and notice: 
 
 ## Notices
 
-Each is a panel in place of the controls, with the Spin button still under it.
+A notice replaces the summary and the Spin button whenever there's no pick, and the Spin button stays hidden while it shows: the notice's own buttons are the next step. The footer stays.
 
-| Case | Picture | Copy and actions |
-|---|---|---|
-| Nothing open | `spot-empty-cup.jpg` | `emptyMessage`, plus the existing "Try [n] km?" button |
-| `daily_cap`, `ip_daily_cap` | Day `spot-shutter-day.jpg`, night `spot-stall-night.jpg` | The existing messages |
-| `rate_limited`, any other error | none | The existing messages |
-| Location refused | none | `refusedMessage`, the area picker when allowed, and a "Try location again" button |
+### Card: a paper notice taped to the wall
 
-Pictures are 160px squares with a 12px radius and the panel border, and empty `alt` (the message carries the meaning). They keep their cream paper background on purpose.
+- Paper `#f6e8cc` in both looks (the pictures' own background, so they blend in). Radius 4px, padding 16px, gaps 12px. Text is always `#1d1d1b` on the paper.
+- Day: 2px `#1d1d1b` border, `0 4px 0 #1d1d1b` shadow. Night: 2px `#1a1530` border, glow `0 0 0 1px rgba(255,217,138,0.25), 0 0 36px rgba(255,217,138,0.28)`.
+- Tape: an 88×22px strip centred on the top edge (top −11px), rotated −3°, `rgba(255,250,232,0.78)`, shadow `0 1px 2px rgba(0,0,0,0.12)`, `aria-hidden`.
+- Top row: the picture (104px, empty `alt`, edges feathered with `mask-image: radial-gradient(circle, #000 58%, transparent 71%)`), then a column with the kicker (Figtree 800, 14/18; day `#1f6b4a`, night `#5b3fd9`) and the headline (`<h2>`, Bungee 20/24).
+- An optional body line (Figtree 15/21).
+- Buttons: up to two in one row of equal columns, 48px tall, pill. The first is primary (day: `#1f6b4a` with white text; night: `#ff4f8b` with `#1a1530` text). The second is an outline: 2px `#1d1d1b`, transparent, `#1d1d1b` text, in both looks.
+- Contrast on the paper: ink 13.9, day kicker 5.3, night kicker 5.5. Add them to the contrast test.
+
+### The wheel while a notice shows
+
+It fades to `saturate(0.2)` at 0.5 opacity, since it has nothing to land on. When out of spins at night, the stall closes instead: the wheel goes to `brightness(0.45) saturate(0.5)`, the roof bulbs turn off (`#4a4560`, no glow) and the neon title turns off (`#8a7f9e`, no glow). Lights off fades over 400 ms with no flicker, and is instant under reduced motion.
+
+### Cases
+
+| Case | Picture | Kicker | Headline | Body | Buttons |
+|---|---|---|---|---|---|
+| Nothing open | Empty cup | The active filters only: "Within 2 km", plus the cuisine if set, plus "rated 4.0 and up" if on. For example, "Within 10 km, Japanese, rated 4.0 and up" | Nothing open nearby | None below 10 km. At 10 km: "That's as far as it goes. Loosen a filter to see more." | In this order, at most two: "Try [next] km", "Any cuisine" (if a cuisine is set), "Any rating" (if the rating switch is on). If none apply: "Find food in Google Maps". Under the buttons, a text button "Change filters" opens the sheet |
+| `daily_cap` | Day: shutter. Night: stall | The reset time (see below) | Out of spins for today | "Lapar Wheel has a daily limit so it stays free. Spins come back at 12 am Malaysia time." | "Find food in Google Maps" |
+| `ip_daily_cap` | As above | The reset time | You've used today's spins | "Everyone gets 30 a day. They come back at 12 am Malaysia time." | "Find food in Google Maps" |
+| `rate_limited` | None | None | Slow down | "Try again in a minute." | "Try again" |
+| Other errors | None | None | Something went wrong | None | "Try again" |
+| Location refused | None | None | Location is off | `refusedMessage`, then the area picker when allowed | "Try location again" |
+
+- "Try [next] km", "Any cuisine" and "Any rating" change that filter and spin at once, like the current "Try 5 km?" button. "Try again" spins again.
+- "Find food in Google Maps" opens `https://www.google.com/maps/search/?api=1&query=<cuisine> restaurants` (just "restaurants" when no cuisine is set) in a new tab. It's a plain link: no API call, nothing stored.
+- Reset time: work out the next 00:00 in Asia/Kuala_Lumpur as an instant. If the device's time zone has the same offset then, the kicker says "Back at midnight". Otherwise it says "Back at [h am/pm] your time", formatted with the device's locale, for example "Back at 5 pm your time". Put this in one pure function with tests across time zones, including one where it lands on the next calendar day.
 
 ## Motion
 
@@ -141,6 +161,7 @@ Everything here respects `prefers-reduced-motion` and a hidden page: no animatio
   - Night to day has no flicker: the lights fade out with the 400 ms cross-fade.
 - **Filter sheet** slides up in 200 ms while the backdrop fades in.
 - **Result card** rises 8px and fades in over 180 ms when the wheel lands.
+- **Notices.** The wheel fades back, and out of spins at night the stall's lights go off, over 400 ms (see Notices).
 
 Nothing else moves: no page-load animation, no fade-up on scroll.
 

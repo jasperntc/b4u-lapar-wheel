@@ -13,6 +13,12 @@
   --sheen-hi: #ffffff;
   --sheen-lo: #000000;
   --backdrop: rgba(20, 16, 30, 0.55);
+
+  /* Notices: paper taped to the wall, the pictures' own cream in both looks. */
+  --paper: #f6e8cc;
+  --paper-ink: #1d1d1b;
+  --tape: rgba(255, 250, 232, 0.78);
+  --shadow-tape: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 [data-look="day"] {
@@ -69,6 +75,12 @@
   --hub: #eef3ec;
   --hub-edge: #1f6b4a;
   --wheel-edge: #1f6b4a;
+
+  --paper-edge: #1d1d1b;
+  --shadow-paper: 0 4px 0 #1d1d1b;
+  --paper-kicker: #1f6b4a;
+  --paper-action: #1f6b4a;
+  --on-paper-action: #ffffff;
 }
 
 [data-look="night"] {
@@ -125,4 +137,26 @@
   --hub: #1a1530;
   --hub-edge: #ffd98a;
   --wheel-edge: #3d3660;
+
+  --paper-edge: #1a1530;
+  --shadow-paper: 0 0 0 1px rgba(255, 217, 138, 0.25), 0 0 36px rgba(255, 217, 138, 0.28);
+  --paper-kicker: #5b3fd9;
+  --paper-action: #ff4f8b;
+  --on-paper-action: #1a1530;
+
+  /* The stall closed: out of spins at night, the roof bulbs and neon go off. */
+  --lamp-off: #4a4560;
+  --title-off: #8a7f9e;
+}
+
+/* Inside a paper notice the paper stays cream, so text and fields (the area picker) keep
+   the day colours in both looks. */
+.paper {
+  color-scheme: light;
+  --ink: #1d1d1b;
+  --ink-soft: #4a4a44;
+  --field: #ffffff;
+  --ghost-edge: #1d1d1b;
+  --edge: 2px;
+  --focus: #1d1d1b;
 }
