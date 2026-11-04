@@ -27,7 +27,9 @@
   --ground-glow: transparent;
   --ink: #1d1d1b;
   --ink-soft: #4a4a44;
-  --tag: #3b3c8c; /* the Built4You credit's tag mark */
+  /* The Built4You credit's tag mark and its "4": the favicon's own pairs, switched by the look. */
+  --tag: #3b3c8c;
+  --tag-on: #fafaf6;
   --edge: 2px;
   --panel: #ffffff;
   --panel-edge: #1d1d1b;
@@ -91,6 +93,7 @@
   --ink: #f3e9d8;
   --ink-soft: #c9bfd9;
   --tag: #abadf2;
+  --tag-on: #1f1a15;
   --edge: 1.5px;
   --panel: #241e3d;
   --panel-edge: #3d3660;
