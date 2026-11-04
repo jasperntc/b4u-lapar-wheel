@@ -17,7 +17,7 @@ type Props = {
   kicker?: string;
   headline: string;
   body?: ReactNode;
-  /** The next-step buttons, one row of equal columns, then anything under them. */
+  /** The next-step buttons, sharing a row when they fit, then anything under them. */
   actions: ReactNode;
   children?: ReactNode;
 };
@@ -49,7 +49,8 @@ export function Notice({ picture, kicker, headline, body, actions, children }: P
         </div>
       </div>
       {typeof body === "string" ? <p className="text-notice-body">{body}</p> : body && <div className="text-notice-body">{body}</div>}
-      <div className="grid auto-cols-fr grid-flow-col gap-2">{actions}</div>
+      {/* Each button grows to fill and never wraps its label; two that don't fit stack. */}
+      <div className="flex flex-wrap gap-2 *:flex-auto *:whitespace-nowrap">{actions}</div>
       {children}
     </div>
   );

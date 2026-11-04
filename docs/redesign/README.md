@@ -3,7 +3,7 @@
 How Lapar Wheel should look, as of 2026-11-04.
 
 - `../redesign.md` is the spec and the source of truth. If anything here disagrees with it, the spec wins: ask before guessing.
-- `reference.html` is a static mock of every screen in both looks. Open it from the repo (it loads the real fonts and images from `public/`) and pick a screen from the bar at the top, or use `?s=<screen>&look=<day|night>`. It isn't part of the app and isn't built or shipped.
+- `reference.html` is a static mock of every screen in both looks. Open it from the repo (it loads the real fonts and images from `public/`) and pick a screen from the bar at the top, or use `?s=<screen>&look=<day|night>`. Add `&shot=1` to hide the screen bar for screenshots. It isn't part of the app and isn't built or shipped.
 - `screens/` holds a screenshot of each screen at 390px wide (2x), named `<look>-<screen>.jpg`. Screens taller than 844px are shown at full height: the page scrolls there.
 - `../redesign-prototype.dc.html` is the earlier clickable prototype's source. Use it only for the spin code (`startSpin`, the swipe handlers, `tick`). Its footer and notices are out of date.
 

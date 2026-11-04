@@ -120,7 +120,7 @@ A notice replaces the summary and the Spin button whenever there's no pick, and 
 - Tape: an 88×22px strip centred on the top edge (top −11px), rotated −3°, `rgba(255,250,232,0.78)`, shadow `0 1px 2px rgba(0,0,0,0.12)`, `aria-hidden`.
 - Top row: the picture (104px, empty `alt`, edges feathered with `mask-image: radial-gradient(circle, #000 58%, transparent 71%)`), then a column with the kicker (Figtree 800, 14/18; day `#1f6b4a`, night `#5b3fd9`) and the headline (`<h2>`, Bungee 20/24).
 - An optional body line (Figtree 15/21).
-- Buttons: up to two in one row of equal columns, 48px tall, pill. The first is primary (day: `#1f6b4a` with white text; night: `#ff4f8b` with `#1a1530` text). The second is an outline: 2px `#1d1d1b`, transparent, `#1d1d1b` text, in both looks.
+- Buttons: up to two, in a wrapping flex row with an 8px gap. Each grows to fill (`flex: 1 1 auto`) and its label never wraps (`white-space: nowrap`), so two share a row when they fit and otherwise each takes a full row. 48px tall, pill. The first is primary (day: `#1f6b4a` with white text; night: `#ff4f8b` with `#1a1530` text). The second is an outline: 2px `#1d1d1b`, transparent, `#1d1d1b` text, in both looks.
 - Contrast on the paper: ink 13.9, day kicker 5.3, night kicker 5.5. Add them to the contrast test.
 
 ### The wheel while a notice shows
