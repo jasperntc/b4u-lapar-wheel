@@ -23,9 +23,7 @@
   // No Workers Logs: requests carry locations, and nothing about them is kept.
   "observability": { "enabled": false },
   // Routes, not a custom domain: the hostname belongs to the Built4You hub,
-  // whose DNS record these routes need.
-  "routes": [
-    { "pattern": "built4you.jasperntc.dev/lapar-wheel", "zone_name": "jasperntc.dev" },
-    { "pattern": "built4you.jasperntc.dev/lapar-wheel/*", "zone_name": "jasperntc.dev" }
-  ]
+  // whose DNS record this route needs. A pattern without a trailing * must match the whole URL,
+  // query string included, so only the wildcard catches share links (/lapar-wheel?p=...).
+  "routes": [{ "pattern": "built4you.jasperntc.dev/lapar-wheel*", "zone_name": "jasperntc.dev" }]
 }
