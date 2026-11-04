@@ -53,11 +53,11 @@ describe("mapsUrl", () => {
 describe("messages", () => {
   it.each([
     ["rate_limited", "Slow down", "Try again in a minute.", false],
-    ["ip_daily_cap", "You’ve used today’s spins", "Everyone gets 30 a day. They come back at 12 am Malaysia time.", true],
+    ["ip_daily_cap", "You’ve used today’s spins", "Everyone gets 30 a day. They come back at 12\u00a0am Malaysia time.", true],
     [
       "daily_cap",
       "Out of spins for today",
-      "Lapar Wheel has a daily limit so it stays free. Spins come back at 12 am Malaysia time.",
+      "Lapar Wheel has a daily limit so it stays free. Spins come back at 12\u00a0am Malaysia time.",
       true,
     ],
     ["upstream", "Something went wrong", null, false],

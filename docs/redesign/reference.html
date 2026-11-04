@@ -80,9 +80,9 @@ body{margin:0;background:#8a8a8a;font-family:Figtree,system-ui,sans-serif}
 .tape{position:absolute;top:-11px;left:50%;width:88px;height:22px;transform:translateX(-50%) rotate(-3deg);background:rgba(255,250,232,0.78);box-shadow:0 1px 2px rgba(0,0,0,0.12)}
 .notice-top{display:flex;align-items:center;gap:12px}
 .pic{flex:none;-webkit-mask-image:radial-gradient(circle,#000 58%,transparent 71%);mask-image:radial-gradient(circle,#000 58%,transparent 71%)}
-.nkicker{margin:0;font-weight:800;font-size:14px;line-height:18px;color:var(--kicker-paper)}
+.nkicker{margin:0;font-weight:800;font-size:14px;line-height:18px;color:var(--kicker-paper);text-wrap:balance}
 .nhead{margin:0;font-family:Bungee,sans-serif;font-weight:400;font-size:20px;line-height:24px}
-.nbody{margin:0;font-size:15px;line-height:21px}
+.nbody{margin:0;font-size:15px;line-height:21px;text-wrap:pretty}
 .notice .btn-primary{background:#1f6b4a;color:#ffffff;border:2px solid #1d1d1b;font-weight:800}
 [data-look="night"] .notice .btn-primary{background:#ff4f8b;color:#1a1530;border-color:#1a1530}
 .notice .btn-outline{background:transparent;color:#1d1d1b;border:2px solid #1d1d1b}
@@ -218,11 +218,11 @@ switch (state) {
     break;
   case "cap":
     faded = true; closed = true;
-    middle = notice({ pic: capPic, kicker: "Back at midnight", head: "Out of spins for today", body: "Lapar Wheel has a daily limit so it stays free. Spins come back at 12 am Malaysia time.", buttons: ["Find food in Google Maps"] });
+    middle = notice({ pic: capPic, kicker: "Back at midnight", head: "Out of spins for today", body: "Lapar Wheel has a daily limit so it stays free. Spins come back at 12&nbsp;am Malaysia time.", buttons: ["Find food in Google Maps"] });
     break;
   case "ip-cap":
     faded = true; closed = true;
-    middle = notice({ pic: capPic, kicker: "Back at 5 pm your time", head: "You've used today's spins", body: "Everyone gets 30 a day. They come back at 12 am Malaysia time.", buttons: ["Find food in Google Maps"] });
+    middle = notice({ pic: capPic, kicker: "Back at 5 pm your time", head: "You've used today's spins", body: "Everyone gets 30 a day. They come back at 12&nbsp;am Malaysia time.", buttons: ["Find food in Google Maps"] });
     break;
   case "rate":
     faded = true;

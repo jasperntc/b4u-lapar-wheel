@@ -45,16 +45,17 @@ export type Filters = { radiusKm: number; cuisine: string; ratingOn: boolean };
 /** What a failed search shows. A cap gets the picture, the reset time and a Maps link; the rest get "Try again". */
 export type ErrorNotice = { headline: string; body: string | null; cap: boolean };
 
+// A no-break space in "12\u00a0am" keeps the time on one line on narrow phones.
 const ERRORS: Record<string, ErrorNotice> = {
   rate_limited: { headline: "Slow down", body: "Try again in a minute.", cap: false },
   daily_cap: {
     headline: "Out of spins for today",
-    body: "Lapar Wheel has a daily limit so it stays free. Spins come back at 12 am Malaysia time.",
+    body: "Lapar Wheel has a daily limit so it stays free. Spins come back at 12\u00a0am Malaysia time.",
     cap: true,
   },
   ip_daily_cap: {
     headline: "You’ve used today’s spins",
-    body: "Everyone gets 30 a day. They come back at 12 am Malaysia time.",
+    body: "Everyone gets 30 a day. They come back at 12\u00a0am Malaysia time.",
     cap: true,
   },
 };

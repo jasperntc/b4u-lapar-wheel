@@ -4,6 +4,7 @@ Mistakes caught during review, mine and the AI's. Newest first.
 
 | Date | Where | Mistake | Caught by | Fix |
 |---|---|---|---|---|
+| 2026-11-05 | `components/Notice.tsx`, `lib/near-me.ts` | Notice text wrapped badly on narrow phones: a lone "up" in the empty-2 kicker and "time." in the cap body at 360px, "more." in the empty-10 body and "12 / am" in the ip-cap body even at 390px | Claude Code, 360px check before merging PR 22 | Kickers wrap balanced, bodies pretty, and "12 am" has a no-break space; empty-10 and ip-cap screenshots re-taken |
 | 2026-11-05 | `components/NearMe.tsx` wheel | The turning layer is a square, so at some landing angles its rotated corners reached past the column and the page scrolled sideways (4px at 360px after one test spin, up to about 17px at 390px) | Claude Code, first 360px check in PR 22 | The wheel section clips on the x axis; the round wheel and the pointer are untouched |
 | 2026-11-05 | `docs/redesign.md` result card | Three buttons filled the 390px row with no spare room, so Share wrapped on 375px and 360px phones and whenever "Link copied" showed | Claude Code, PR 22 | Two buttons (Spin again, Share) plus a "Change filters" link |
 | 2026-11-05 | `docs/redesign/reference.html` shared-cap | The mock showed a "Google Maps" line on the out-of-spins share card, where no Google data appears | Claude Code, comparing the mock with the spec | Line removed and the shared-cap screenshots re-taken |
