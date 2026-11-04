@@ -86,7 +86,7 @@ One centred column, at most 390px wide, on a full-width ground. Top to bottom:
    - The summary reads like "Near you, within 2 km, any cuisine, rated 4.0 and up", with "In [area]" instead of "Near you" in area mode. It ends with an underlined "Change" and opens the filter sheet.
 6. **Result card** replaces the controls once the wheel lands: kicker "Go makan at", the name, "[distance] away, open now.", a full-width Open in Maps button, then Spin again and Share (see Share links), then a "Change filters" text link with a 44px tall tap area that opens the filter sheet, then "Google Maps" in small print (attribution, same container).
 7. **Notices** replace the controls when there's no pick (see below).
-8. **Footer**, centred: the Look switch (Auto / Day / Night) with the Sound toggle beside it (Sound arrives in PR 2), and under them the "Built4You, episode 1" credit with the tag mark. In the day look the footer stays above the green tile band.
+8. **Footer**, centred: the Look switch (Auto / Day / Night) with the Sound toggle beside it (Sound arrives in PR 2), and under them the "Built4You, episode 1" credit with the tag mark: the favicon's tag and its "4", in the favicon's own colours switched by the look, with 8px clear space to the text. In the day look the footer stays above the green tile band.
 
 ## Wheel
 

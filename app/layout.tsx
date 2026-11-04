@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: [og] },
 };
 
-// Browser chrome matches the ground. The inline script switches it with the look; it's the only theme-color meta.
+// Browser chrome matches the ground. The inline script makes the only theme-color meta and switches it with the look.
 const ground = laparToken("ground");
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -35,7 +35,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     // The inline script sets data-look before first paint, so React keeps the DOM's value.
     <html lang="en" data-look="day" suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content={ground.day} />
         <script dangerouslySetInnerHTML={{ __html: lookScript(ground) }} />
       </head>
       <body className="min-h-dvh font-body text-body text-ink antialiased">{children}</body>

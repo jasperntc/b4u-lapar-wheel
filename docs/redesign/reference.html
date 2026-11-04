@@ -71,8 +71,8 @@ body{margin:0;background:#8a8a8a;font-family:Figtree,system-ui,sans-serif}
 .pill{min-height:32px;padding:0 10px;border-radius:999px;font:inherit;font-size:13px;display:inline-flex;align-items:center;color:var(--ink);background:var(--chip-off-bg);border:1.5px solid var(--ink)}
 [data-look="night"] .pill{border-color:#3d3660}
 .pill[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
-.credit{display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px}
-.tag{fill:#3b3c8c;stroke:#3b3c8c}[data-look="night"] .tag{fill:#abadf2;stroke:#abadf2}
+.credit{display:inline-flex;align-items:center;gap:8px;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px}
+.tag{fill:#3b3c8c;stroke:#3b3c8c}.tag-on{fill:#fafaf6}[data-look="night"] .tag{fill:#abadf2;stroke:#abadf2}[data-look="night"] .tag-on{fill:#1f1a15}
 
 .notice{position:relative;margin-top:4px;padding:16px;border-radius:4px;display:flex;flex-direction:column;gap:12px;background:#f6e8cc;color:#1d1d1b}
 [data-look="day"] .notice{border:2px solid #1d1d1b;box-shadow:0 4px 0 #1d1d1b}
@@ -164,7 +164,7 @@ function wheel(names, pick) {
 }
 
 const BLANK = Array.from({ length: 10 }, () => "");
-const tag = `<svg aria-hidden="true" width="14" height="14" viewBox="0 0 32 32"><path class="tag" fill-rule="evenodd" stroke-width="2" stroke-linejoin="round" d="M6 8 L12 2 L20 2 L26 8 L26 30 L6 30 Z M13.8 8 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 Z"/></svg>`;
+const tag = `<svg aria-hidden="true" width="14" height="14" viewBox="0 0 32 32"><path class="tag" fill-rule="evenodd" stroke-width="2" stroke-linejoin="round" d="M6 8 L12 2 L20 2 L26 8 L26 30 L6 30 Z M13.8 8 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 Z"/><path class="tag-on" transform="translate(11.41 26.35) scale(0.02042)" d="M7 -119V-270Q35 -318 59.0 -372.5Q83 -427 101.0 -480.5Q119 -534 130.0 -580.5Q141 -627 144 -661H387V0H234V-544H230Q218 -489 201.5 -436.0Q185 -383 166.0 -335.0Q147 -287 126 -246V-240H442V-119Z"/></svg>`;
 const footer = `<footer class="footer">
   <div class="footer-row">
     <div class="seg" role="group" aria-label="Look"><button class="pill" aria-pressed="true">Auto</button><button class="pill" aria-pressed="false">Day</button><button class="pill" aria-pressed="false">Night</button></div>
