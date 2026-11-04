@@ -122,7 +122,7 @@ body{margin:0;background:#8a8a8a;font-family:Figtree,system-ui,sans-serif}
 const STATES = {
   start: "Start", result: "Result", sheet: "Filter sheet", "empty-2": "Nothing open, 2 km", "empty-10": "Nothing open, 10 km",
   "cap": "Out of spins (everyone)", "ip-cap": "Out of spins (you)", "rate": "Slow down", refused: "Location refused",
-  shared: "Opened from a share link", "shared-gone": "Shared place gone", "shared-cap": "Share link, out of spins",
+  shared: "Opened from a share link", "shared-loading": "Share link, checking", "shared-gone": "Shared place gone", "shared-cap": "Share link, out of spins",
 };
 const q = new URLSearchParams(location.search);
 const state = STATES[q.get("s")] ? q.get("s") : "start";
@@ -241,6 +241,12 @@ switch (state) {
       <p class="attrib">Google Maps</p>
     </section>`;
     break;
+  case "shared-loading":
+    middle = `<section class="card" role="status" aria-busy="true">
+      <p class="kicker">Shared with you</p>
+      <h2 class="place">Finding the place…</h2>
+    </section>`;
+    break;
   case "shared-gone":
     faded = true;
     middle = notice({ pic: capPic, head: "Not available", body: "This place isn't available anymore. Spin for somewhere that's open.", buttons: ["Spin your own"] });
@@ -252,7 +258,6 @@ switch (state) {
       <h2 class="place">A place picked for you</h2>
       <p class="meta">Lapar Wheel is out of spins for today, so it can't show the name here. Maps can.</p>
       <a class="btn maps" href="#">Open in Maps</a>
-      <p class="attrib">Google Maps</p>
     </section>`;
     break;
   case "sheet":

@@ -4,6 +4,7 @@ Mistakes caught during review, mine and the AI's. Newest first.
 
 | Date | Where | Mistake | Caught by | Fix |
 |---|---|---|---|---|
+| 2026-11-05 | `docs/redesign/reference.html` shared-cap | The mock showed a "Google Maps" line on the out-of-spins share card, where no Google data appears | Claude Code, comparing the mock with the spec | Line removed and the shared-cap screenshots re-taken |
 | 2026-11-04 | `docs/redesign.md` Notices | Notice buttons were equal columns, so a longer label ("Try location again" beside "Spin") wrapped onto two lines inside a pill | Claude Code, refused-notice screenshots | Buttons grow to fit, labels never wrap, and two that don't fit stack |
 | 2026-11-04 | `docs/redesign.md` Notices, `components/NearMe.tsx` | The redesign spec put a bordered 160px picture inside a bordered panel, with one line of copy and the Spin button left under it, so the empty and out-of-spins notices looked broken, read like errors and invited spins that couldn't work | Me, reviewing PR 1 on my phone | Notices became a taped-up paper notice with a headline, the filters or reset time, and their own next-step buttons; the Spin button hides while one shows |
 | 2026-11-04 | Redesign kit (`public/`, repo root) | Two overlapping zips from the design session: the first one's extras (`public/icons/`, `public/og-day.jpg`, `ASSETS.md`) were unzipped into the repo alongside the kit and would have shipped from `public/` | Claude Code, planning the redesign PR | Deleted them; the kit is the only source, and docs/redesign.md is the one asset list |

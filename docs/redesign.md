@@ -4,7 +4,7 @@ Approved 2026-11-04. Lapar Wheel gets its own look, with a thin Built4You wrappe
 
 ## What stays the same
 
-Everything behavioural in `CLAUDE.md` still applies: the API, limits, copy for errors, privacy, attribution, `pickIndex`, pick first then animate, reduced motion, storage keys prefixed `lapar-wheel:`. Halal mode, share links and an "All of KK" radius aren't built yet, so the prototype's halal switch, Share button and All of KK chip are left out until they are.
+Everything behavioural in `CLAUDE.md` still applies: the API, limits, copy for errors, privacy, attribution, `pickIndex`, pick first then animate, reduced motion, storage keys prefixed `lapar-wheel:`. Halal mode and an "All of KK" radius aren't built yet, so the prototype's halal switch and All of KK chip are left out until they are.
 
 ## Looks
 
@@ -84,7 +84,7 @@ One centred column, at most 390px wide, on a full-width ground. Top to bottom:
 4. **Wheel**, 300px, or the column width if smaller.
 5. **Controls** before a result: a summary button, the Spin button (60px tall), and a hint "Or swipe the wheel" (only once swipe exists).
    - The summary reads like "Near you, within 2 km, any cuisine, rated 4.0 and up", with "In [area]" instead of "Near you" in area mode. It ends with an underlined "Change" and opens the filter sheet.
-6. **Result card** replaces the controls once the wheel lands: kicker "Go makan at", the name, "[distance] away, open now.", a full-width Open in Maps button, then Spin again and Filters side by side, then "Google Maps" in small print (attribution, same container).
+6. **Result card** replaces the controls once the wheel lands: kicker "Go makan at", the name, "[distance] away, open now.", a full-width Open in Maps button, then Spin again, Filters and Share (see Share links), then "Google Maps" in small print (attribution, same container).
 7. **Notices** replace the controls when there's no pick (see below).
 8. **Footer**, centred: the Look switch (Auto / Day / Night) with the Sound toggle beside it (Sound arrives in PR 2), and under them the "Built4You, episode 1" credit with the tag mark. In the day look the footer stays above the green tile band.
 
@@ -164,6 +164,20 @@ Everything here respects `prefers-reduced-motion` and a hidden page: no animatio
 - **Notices.** The wheel fades back, and out of spins at night the stall's lights go off, over 400 ms (see Notices).
 
 Nothing else moves: no page-load animation, no fade-up on scroll.
+
+## Share links
+
+- Result card buttons: Spin again, Filters, Share, in one wrapping row (the notice-button rule: each grows to fill, labels never wrap).
+- Share: `navigator.share({ title: "Lapar Wheel", text: "The wheel picked [name].", url })` where it exists. Otherwise copy the url, and the button reads "Link copied" for 2 s, announced politely. If copying fails, show the link in a read-only, selectable field under the buttons. A cancelled share sheet is not an error.
+- The url is `https://built4you.jasperntc.dev/lapar-wheel?p=<placeId>`, with nothing else in it. Never a location, name or filter.
+- Opening a link: read `p` on the client. A valid ID matches `/^[A-Za-z0-9_-]{16,256}$/`. Anything else is dropped from the url (`history.replaceState`) and the normal start screen shows, with no error and no throw. A valid ID makes exactly one call to `/api/place/:id?check=status`. Never ask for location, never spin.
+  - While it's in flight (`shared-loading`): the shared card with the kicker "Shared with you" and "Finding the place…" in the name's place (Bungee, so the card doesn't jump when the name arrives), no buttons, `aria-busy` on the card, the wheel normal.
+  - `available` true → `shared`: kicker "Shared with you", the name, "Picked on Lapar Wheel. Check the hours in Maps before you go.", Open in Maps (`mapsUrl(name, id)`), "Spin your own", "Google Maps".
+  - `available` false → `shared-gone`: paper notice with the day shutter or night stall, headline "Not available", body "This place isn't available anymore. Spin for somewhere that's open.", button "Spin your own".
+  - `daily_cap` or `ip_daily_cap` → `shared-cap`: kicker "Shared with you", headline "A place picked for you", "Lapar Wheel is out of spins for today, so it can't show the name here. Maps can.", Open in Maps as `https://www.google.com/maps/search/?api=1&query=restaurant&query_place_id=<id>`. No Spin your own and no "Google Maps" line, since no Google data shows. The wheel fades, and at night the stall closes, as in the cap notices.
+  - `rate_limited` or any other error → paper notice with the existing message for that error and "Try again", which repeats the same single call.
+- "Spin your own" removes `p` from the url (`history.replaceState`) and shows the normal start screen. It doesn't spin by itself.
+- The page's og image stays `og-night.jpg` for every link, and the canonical url is the page without `p`.
 
 ## Share preview and icons
 
