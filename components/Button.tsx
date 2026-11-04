@@ -13,7 +13,7 @@ const ghost = "border-(length:--edge) border-ghost-edge bg-ghost text-ink";
 const LOOKS = {
   spin: `${spin} min-h-15 px-8 font-sign text-spin-label`,
   action: `${spin} min-h-13 px-6 text-button font-extrabold`,
-  ghost: `${ghost} min-h-12 px-6 text-button`,
+  ghost: `${ghost} min-h-12 px-4 text-button`,
   small: `${ghost} min-h-9 px-3 text-sub`,
   paper: "border-2 border-paper-edge bg-paper-action text-on-paper-action min-h-12 px-4 text-button font-extrabold",
   "paper-outline": "border-2 border-paper-ink bg-transparent text-paper-ink min-h-12 px-4 text-button",
@@ -22,6 +22,9 @@ const LOOKS = {
 /** A variant's classes, for a link that looks like a button. */
 export const buttonClass = (variant: Variant) =>
   `${LOOKS[variant]} inline-flex items-center justify-center rounded-full text-center underline-offset-4 hover:underline active:translate-y-[3px] disabled:cursor-wait disabled:hover:no-underline`;
+
+/** A row of buttons: each grows to fill and never wraps its label; ones that don't fit move to the next row. */
+export const buttonRow = "flex flex-wrap gap-2 *:flex-auto *:whitespace-nowrap";
 
 /** A pill button. Day buttons sink 3px on press. */
 export function Button({ variant = "ghost", className = "", ...props }: Props) {

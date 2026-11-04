@@ -4,7 +4,7 @@ Approved 2026-11-04. Lapar Wheel gets its own look, with a thin Built4You wrappe
 
 ## What stays the same
 
-Everything behavioural in `CLAUDE.md` still applies: the API, limits, copy for errors, privacy, attribution, `pickIndex`, pick first then animate, reduced motion, storage keys prefixed `lapar-wheel:`. Halal mode, share links and an "All of KK" radius aren't built yet, so the prototype's halal switch, Share button and All of KK chip are left out until they are.
+Everything behavioural in `CLAUDE.md` still applies: the API, limits, copy for errors, privacy, attribution, `pickIndex`, pick first then animate, reduced motion, storage keys prefixed `lapar-wheel:`. Halal mode and an "All of KK" radius aren't built yet, so the prototype's halal switch and All of KK chip are left out until they are.
 
 ## Looks
 
@@ -84,7 +84,7 @@ One centred column, at most 390px wide, on a full-width ground. Top to bottom:
 4. **Wheel**, 300px, or the column width if smaller.
 5. **Controls** before a result: a summary button, the Spin button (60px tall), and a hint "Or swipe the wheel" (only once swipe exists).
    - The summary reads like "Near you, within 2 km, any cuisine, rated 4.0 and up", with "In [area]" instead of "Near you" in area mode. It ends with an underlined "Change" and opens the filter sheet.
-6. **Result card** replaces the controls once the wheel lands: kicker "Go makan at", the name, "[distance] away, open now.", a full-width Open in Maps button, then Spin again and Filters side by side, then "Google Maps" in small print (attribution, same container).
+6. **Result card** replaces the controls once the wheel lands: kicker "Go makan at", the name, "[distance] away, open now.", a full-width Open in Maps button, then Spin again and Share (see Share links), then a "Change filters" text link with a 44px tall tap area that opens the filter sheet, then "Google Maps" in small print (attribution, same container).
 7. **Notices** replace the controls when there's no pick (see below).
 8. **Footer**, centred: the Look switch (Auto / Day / Night) with the Sound toggle beside it (Sound arrives in PR 2), and under them the "Built4You, episode 1" credit with the tag mark. In the day look the footer stays above the green tile band.
 
@@ -98,7 +98,7 @@ One centred column, at most 390px wide, on a full-width ground. Top to bottom:
 
 ## Filter sheet
 
-Opens from the summary's Change and from the result card's Filters button. It's a bottom sheet over a dim backdrop (`rgba(20,16,30,0.55)`). `role="dialog"`, `aria-modal`, focus moves in and returns to the opener, Escape and the backdrop close it, focus is trapped while open. It doesn't open mid-spin.
+Opens from the summary's Change, the result card's Change filters link and the nothing-open notice's Change filters link. It's a bottom sheet over a dim backdrop (`rgba(20,16,30,0.55)`). `role="dialog"`, `aria-modal`, focus moves in and returns to the opener, Escape and the backdrop close it, focus is trapped while open. It doesn't open mid-spin.
 
 1. Title "Filters" with a Reset button.
 2. **Where**: the Near me button ("Finding you…" while locating, "Using your location." once found), the area picker when in area mode, and the line "Your location is only used for this search. It's never stored."
@@ -119,7 +119,7 @@ A notice replaces the summary and the Spin button whenever there's no pick, and 
 - Day: 2px `#1d1d1b` border, `0 4px 0 #1d1d1b` shadow. Night: 2px `#1a1530` border, glow `0 0 0 1px rgba(255,217,138,0.25), 0 0 36px rgba(255,217,138,0.28)`.
 - Tape: an 88×22px strip centred on the top edge (top −11px), rotated −3°, `rgba(255,250,232,0.78)`, shadow `0 1px 2px rgba(0,0,0,0.12)`, `aria-hidden`.
 - Top row: the picture (104px, empty `alt`, edges feathered with `mask-image: radial-gradient(circle, #000 58%, transparent 71%)`), then a column with the kicker (Figtree 800, 14/18; day `#1f6b4a`, night `#5b3fd9`) and the headline (`<h2>`, Bungee 20/24).
-- An optional body line (Figtree 15/21).
+- An optional body line (Figtree 15/21). The kicker wraps balanced (`text-wrap: balance`) and the body pretty (`text-wrap: pretty`), so a 360px phone never leaves one word alone on a line.
 - Buttons: up to two, in a wrapping flex row with an 8px gap. Each grows to fill (`flex: 1 1 auto`) and its label never wraps (`white-space: nowrap`), so two share a row when they fit and otherwise each takes a full row. 48px tall, pill. The first is primary (day: `#1f6b4a` with white text; night: `#ff4f8b` with `#1a1530` text). The second is an outline: 2px `#1d1d1b`, transparent, `#1d1d1b` text, in both looks.
 - Contrast on the paper: ink 13.9, day kicker 5.3, night kicker 5.5. Add them to the contrast test.
 
@@ -164,6 +164,20 @@ Everything here respects `prefers-reduced-motion` and a hidden page: no animatio
 - **Notices.** The wheel fades back, and out of spins at night the stall's lights go off, over 400 ms (see Notices).
 
 Nothing else moves: no page-load animation, no fade-up on scroll.
+
+## Share links
+
+- Result card buttons: Spin again and Share, in one wrapping row (the notice-button rule: each grows to fill, labels never wrap). Under them, a "Change filters" text link with a 44px tall tap area, as on the notices, opens the filter sheet. Three buttons left no room at 390px and wrapped on 375px and 360px phones.
+- Share: `navigator.share({ title: "Lapar Wheel", text: "The wheel picked [name].", url })` where it exists. Otherwise copy the url, and the button reads "Link copied" for 2 s, announced politely. If copying fails, show the link in a read-only, selectable field under the buttons. A cancelled share sheet is not an error.
+- The url is `https://built4you.jasperntc.dev/lapar-wheel?p=<placeId>`, with nothing else in it. Never a location, name or filter.
+- Opening a link: read `p` on the client. A valid ID matches `/^[A-Za-z0-9_-]{16,256}$/`. Anything else is dropped from the url (`history.replaceState`) and the normal start screen shows, with no error and no throw. A valid ID makes exactly one call to `/api/place/:id?check=status`. Never ask for location, never spin.
+  - While it's in flight (`shared-loading`): the shared card with the kicker "Shared with you" and "Finding the place…" in the name's place (Bungee, so the card doesn't jump when the name arrives), no buttons, `aria-busy` on the card, the wheel normal.
+  - `available` true → `shared`: kicker "Shared with you", the name, "Picked on Lapar Wheel. Check the hours in Maps before you go.", Open in Maps (`mapsUrl(name, id)`), "Spin your own", "Google Maps".
+  - `available` false → `shared-gone`: paper notice with the day shutter or night stall, headline "Not available", body "This place isn't available anymore. Spin for somewhere that's open.", button "Spin your own".
+  - `daily_cap` or `ip_daily_cap` → `shared-cap`: kicker "Shared with you", headline "A place picked for you", "Lapar Wheel is out of spins for today, so it can't show the name here. Maps can.", Open in Maps as `https://www.google.com/maps/search/?api=1&query=restaurant&query_place_id=<id>`. No Spin your own and no "Google Maps" line, since no Google data shows. The wheel fades, and at night the stall closes, as in the cap notices.
+  - `rate_limited` or any other error → paper notice with the existing message for that error and "Try again", which repeats the same single call.
+- "Spin your own" removes `p` from the url (`history.replaceState`) and shows the normal start screen. It doesn't spin by itself.
+- The page's og image stays `og-night.jpg` for every link, and the canonical url is the page without `p`.
 
 ## Share preview and icons
 

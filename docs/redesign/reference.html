@@ -80,15 +80,16 @@ body{margin:0;background:#8a8a8a;font-family:Figtree,system-ui,sans-serif}
 .tape{position:absolute;top:-11px;left:50%;width:88px;height:22px;transform:translateX(-50%) rotate(-3deg);background:rgba(255,250,232,0.78);box-shadow:0 1px 2px rgba(0,0,0,0.12)}
 .notice-top{display:flex;align-items:center;gap:12px}
 .pic{flex:none;-webkit-mask-image:radial-gradient(circle,#000 58%,transparent 71%);mask-image:radial-gradient(circle,#000 58%,transparent 71%)}
-.nkicker{margin:0;font-weight:800;font-size:14px;line-height:18px;color:var(--kicker-paper)}
+.nkicker{margin:0;font-weight:800;font-size:14px;line-height:18px;color:var(--kicker-paper);text-wrap:balance}
 .nhead{margin:0;font-family:Bungee,sans-serif;font-weight:400;font-size:20px;line-height:24px}
-.nbody{margin:0;font-size:15px;line-height:21px}
+.nbody{margin:0;font-size:15px;line-height:21px;text-wrap:pretty}
 .notice .btn-primary{background:#1f6b4a;color:#ffffff;border:2px solid #1d1d1b;font-weight:800}
 [data-look="night"] .notice .btn-primary{background:#ff4f8b;color:#1a1530;border-color:#1a1530}
 .notice .btn-outline{background:transparent;color:#1d1d1b;border:2px solid #1d1d1b}
 .nbtns{display:flex;flex-wrap:wrap;gap:8px}
 .nbtns .btn{flex:1 1 auto;white-space:nowrap}
 .linkbtn{align-self:center;background:none;border:0;padding:4px;font:inherit;font-size:15px;font-weight:600;color:#1d1d1b;text-decoration:underline;text-underline-offset:3px}
+.card .linkbtn{color:var(--ink);min-height:44px}
 .field{display:flex;flex-direction:column;gap:4px}
 .field span{font-size:14px;line-height:20px;color:#4a4a44}
 .select{height:48px;padding:0 12px;border-radius:10px;font:inherit;font-size:16px;border:2px solid #1d1d1b;background:#ffffff;color:#1d1d1b}
@@ -122,6 +123,7 @@ body{margin:0;background:#8a8a8a;font-family:Figtree,system-ui,sans-serif}
 const STATES = {
   start: "Start", result: "Result", sheet: "Filter sheet", "empty-2": "Nothing open, 2 km", "empty-10": "Nothing open, 10 km",
   "cap": "Out of spins (everyone)", "ip-cap": "Out of spins (you)", "rate": "Slow down", refused: "Location refused",
+  shared: "Opened from a share link", "shared-loading": "Share link, checking", "shared-gone": "Shared place gone", "shared-cap": "Share link, out of spins",
 };
 const q = new URLSearchParams(location.search);
 const state = STATES[q.get("s")] ? q.get("s") : "start";
@@ -201,7 +203,8 @@ switch (state) {
       <h2 class="place">Pier Seafood</h2>
       <p class="meta">650 m away, open now.</p>
       <a class="btn maps" href="#">Open in Maps</a>
-      <div class="row2"><button class="btn ghost">Spin again</button><button class="btn ghost">Filters</button></div>
+      <div class="nbtns"><button class="btn ghost">Spin again</button><button class="btn ghost">Share</button></div>
+      <button class="linkbtn">Change filters</button>
       <p class="attrib">Google Maps</p>
     </section>`;
     break;
@@ -215,11 +218,11 @@ switch (state) {
     break;
   case "cap":
     faded = true; closed = true;
-    middle = notice({ pic: capPic, kicker: "Back at midnight", head: "Out of spins for today", body: "Lapar Wheel has a daily limit so it stays free. Spins come back at 12 am Malaysia time.", buttons: ["Find food in Google Maps"] });
+    middle = notice({ pic: capPic, kicker: "Back at midnight", head: "Out of spins for today", body: "Lapar Wheel has a daily limit so it stays free. Spins come back at 12&nbsp;am Malaysia time.", buttons: ["Find food in Google Maps"] });
     break;
   case "ip-cap":
     faded = true; closed = true;
-    middle = notice({ pic: capPic, kicker: "Back at 5 pm your time", head: "You've used today's spins", body: "Everyone gets 30 a day. They come back at 12 am Malaysia time.", buttons: ["Find food in Google Maps"] });
+    middle = notice({ pic: capPic, kicker: "Back at 5 pm your time", head: "You've used today's spins", body: "Everyone gets 30 a day. They come back at 12&nbsp;am Malaysia time.", buttons: ["Find food in Google Maps"] });
     break;
   case "rate":
     faded = true;
@@ -229,6 +232,35 @@ switch (state) {
     faded = true;
     middle = notice({ head: "Location is off", body: "Allow location to spin near you, or pick an area in Kota Kinabalu.", buttons: ["Spin", "Try location again"],
       extra: `<label class="field"><span>Pick an area in Kota Kinabalu</span><select class="select"><option>City centre</option><option>Likas</option><option>Inanam</option></select></label><p class="osm">Area centres © OpenStreetMap contributors</p>` });
+    break;
+  case "shared":
+    middle = `<section class="card" role="status">
+      <p class="kicker">Shared with you</p>
+      <h2 class="place">Pier Seafood</h2>
+      <p class="meta">Picked on Lapar Wheel. Check the hours in Maps before you go.</p>
+      <a class="btn maps" href="#">Open in Maps</a>
+      <button class="btn ghost">Spin your own</button>
+      <p class="attrib">Google Maps</p>
+    </section>`;
+    break;
+  case "shared-loading":
+    middle = `<section class="card" role="status" aria-busy="true">
+      <p class="kicker">Shared with you</p>
+      <h2 class="place">Finding the place…</h2>
+    </section>`;
+    break;
+  case "shared-gone":
+    faded = true;
+    middle = notice({ pic: capPic, head: "Not available", body: "This place isn't available anymore. Spin for somewhere that's open.", buttons: ["Spin your own"] });
+    break;
+  case "shared-cap":
+    faded = true; closed = true;
+    middle = `<section class="card" role="status">
+      <p class="kicker">Shared with you</p>
+      <h2 class="place">A place picked for you</h2>
+      <p class="meta">Lapar Wheel is out of spins for today, so it can't show the name here. Maps can.</p>
+      <a class="btn maps" href="#">Open in Maps</a>
+    </section>`;
     break;
   case "sheet":
     middle = controls;

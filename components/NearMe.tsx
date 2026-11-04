@@ -29,18 +29,33 @@ import {
   type SpinCache,
 } from "@/lib/near-me";
 import { pickIndex } from "@/lib/pick";
+import {
+  capMapsUrl,
+  checkPlace,
+  flashCopied,
+  readShareId,
+  sharePick,
+  shareUrl,
+  sharedView,
+  withoutP,
+  type SharedView,
+} from "@/lib/share";
 import { AreaPicker, field } from "./AreaPicker";
-import { Button, buttonClass } from "./Button";
+import { Button, buttonClass, buttonRow } from "./Button";
 import { Notice } from "./Notice";
 import { Wheel } from "./Wheel";
 
 type Centre = { lat: number; lon: number };
 // Nothing open reads the current filters: they only change through the sheet, whose close clears the notice.
 type Shown = { kind: "empty" } | { kind: "error"; code: string };
+// An opened share link. Only the ID ever reaches the url; the name lives here for this visit.
+type Shared = { id: string; view: SharedView | "loading"; name: string | null; code: string };
 
 // "/lapar-wheel/": a plain fetch path doesn't get the basePath on its own.
 const base = import.meta.env.BASE_URL;
 const MAX_SEGMENTS = 20;
+const mapsLink =
+  "inline-flex min-h-12 items-center justify-center rounded-full border-2 border-maps-edge bg-maps text-button font-extrabold text-on-maps";
 const chip =
   "inline-flex min-h-11 cursor-pointer items-center rounded-full border-(length:--edge) border-ghost-edge bg-ghost px-4 text-button text-ink has-checked:border-accent has-checked:bg-accent has-checked:text-on-accent has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus";
 
@@ -85,6 +100,11 @@ export function NearMe() {
   const sheet = useRef<HTMLDialogElement>(null);
   const filtersAtOpen = useRef("");
   const summary = useRef<HTMLButtonElement>(null);
+  const [shared, setShared] = useState<Shared | null>(null);
+  const opened = useRef(false);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [copyFailed, setCopyFailed] = useState(false);
+  const cancelCopied = useRef(() => {});
 
   const area = areas.find((a) => a.id === areaId) ?? areas[0];
   const filters = JSON.stringify([mode, areaId, radiusKm, cuisine, ratingOn]);
@@ -124,6 +144,9 @@ export function NearMe() {
     setBusy(true);
     setNotice(null);
     setPick(null);
+    cancelCopied.current();
+    setCopied(null);
+    setCopyFailed(false);
 
     const centre = mode === "here" ? here : mode === "area" ? area : await askLocation();
     if (!centre) return done();
@@ -169,6 +192,39 @@ export function NearMe() {
     void spin(a.kind === "radius" ? { radiusKm: a.km } : a.kind === "cuisine" ? { cuisine: "" } : { ratingOn: false });
   }
 
+  /** An opened link's one call. "Try again" repeats it; it never asks for location or spins. */
+  async function openShared(id: string) {
+    setShared({ id, view: "loading", name: null, code: "" });
+    const r = await checkPlace(id, base);
+    setShared({ id, view: sharedView(r), name: r.ok ? r.name : null, code: r.ok ? "" : r.error });
+  }
+
+  // Read p once. The ref keeps React's dev double-run to a single call.
+  useEffect(() => {
+    if (opened.current) return;
+    opened.current = true;
+    const link = readShareId(location.search);
+    if (link && "drop" in link) history.replaceState(null, "", withoutP(location.href));
+    // The static HTML has no p, so the url can only be read here, after hydration; one extra render is the cost.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    else if (link) void openShared(link.id);
+  }, []);
+
+  /** Back to the normal start screen, without p. It doesn't spin. */
+  function spinOwn() {
+    history.replaceState(null, "", withoutP(location.href));
+    setShared(null);
+  }
+
+  async function share(p: Place) {
+    const outcome = await sharePick(navigator, { name: p.name, url: shareUrl(p.id) });
+    if (outcome === "copied") {
+      cancelCopied.current();
+      cancelCopied.current = flashCopied(setCopied);
+    }
+    setCopyFailed(outcome === "failed");
+  }
+
   function openSheet() {
     if (busyRef.current) return;
     filtersAtOpen.current = filters;
@@ -180,7 +236,7 @@ export function NearMe() {
     if (filters === filtersAtOpen.current) return;
     setPick(null);
     setNotice(null);
-    // The opener may have been the result card's Filters button, which is now gone.
+    // The opener may have been the result card's Change filters link, which is now gone.
     requestAnimationFrame(() => summary.current?.focus());
   }
 
@@ -192,7 +248,8 @@ export function NearMe() {
 
   const showRefused = refused && !busy && !pick && !notice;
   const error = notice?.kind === "error" ? errorNotice(notice.code) : null;
-  const closed = Boolean(error?.cap);
+  const sharedError = shared?.view === "error" ? errorNotice(shared.code) : null;
+  const closed = Boolean(error?.cap) || shared?.view === "cap";
 
   // Out of spins, the night stall closes: the roof bulbs and neon title (in app/page.tsx) go off.
   useEffect(() => {
@@ -207,7 +264,13 @@ export function NearMe() {
 
   return (
     <div className="flex flex-col gap-3">
-      <section aria-label="Wheel" className={notice || showRefused ? "wheel-dim" : undefined}>
+      {/* The turning square's corners reach 1.41× its width mid-turn; clip them so the page never scrolls sideways. */}
+      <section
+        aria-label="Wheel"
+        className={`overflow-x-clip ${
+          notice || showRefused || (shared && shared.view !== "loading" && shared.view !== "shared") ? "wheel-dim" : ""
+        }`}
+      >
         <Wheel
           names={places.map((p) => p.name)}
           rotation={rotation}
@@ -223,26 +286,89 @@ export function NearMe() {
             <p className="text-kicker text-accent">Go makan at</p>
             <h2 className="font-sign text-place break-words">{pick.name}</h2>
             <p>{formatDistance(pick.distanceM)} away, open now.</p>
-            <a
-              href={mapsUrl(pick.name, pick.id)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-maps-edge bg-maps text-button font-extrabold text-on-maps"
-            >
+            <a href={mapsUrl(pick.name, pick.id)} target="_blank" rel="noopener noreferrer" className={mapsLink}>
               Open in Maps
             </a>
-            <div className="grid grid-cols-2 gap-2">
+            <div className={buttonRow}>
               <Button onClick={() => void spin()} disabled={busy}>
                 Spin again
               </Button>
-              <Button onClick={openSheet} disabled={busy} aria-haspopup="dialog">
-                Filters
+              <Button onClick={() => void share(pick)} disabled={busy}>
+                {copied ?? "Share"}
               </Button>
             </div>
+            {copyFailed && (
+              <label className="flex flex-col gap-2">
+                <span className="sr-only">Share link</span>
+                <input readOnly value={shareUrl(pick.id)} onFocus={(e) => e.currentTarget.select()} className={field} />
+              </label>
+            )}
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              onClick={openSheet}
+              disabled={busy}
+              className="min-h-11 cursor-pointer self-center px-3 text-notice-body font-semibold underline underline-offset-3"
+            >
+              Change filters
+            </button>
             <p className="text-small text-ink-soft" translate="no">
               Google Maps
             </p>
           </article>
+        )}
+        {(shared?.view === "loading" || shared?.view === "shared" || shared?.view === "cap") && (
+          // No rise: it shows on page load, and nothing moves on load.
+          <article className="card flex flex-col gap-3 p-4" aria-busy={shared.view === "loading"}>
+            <p className="text-kicker text-accent">Shared with you</p>
+            {/* Bungee while loading too, so the card doesn't jump when the name arrives. */}
+            <h2 className="font-sign text-place break-words">
+              {shared.view === "loading" ? "Finding the place…" : shared.view === "cap" ? "A place picked for you" : shared.name}
+            </h2>
+            {shared.view === "shared" && shared.name && (
+              <>
+                <p>Picked on Lapar Wheel. Check the hours in Maps before you go.</p>
+                <a href={mapsUrl(shared.name, shared.id)} target="_blank" rel="noopener noreferrer" className={mapsLink}>
+                  Open in Maps
+                </a>
+                <Button onClick={spinOwn}>Spin your own</Button>
+                <p className="text-small text-ink-soft" translate="no">
+                  Google Maps
+                </p>
+              </>
+            )}
+            {shared.view === "cap" && (
+              <>
+                <p>Lapar Wheel is out of spins for today, so it can’t show the name here. Maps can.</p>
+                <a href={capMapsUrl(shared.id)} target="_blank" rel="noopener noreferrer" className={mapsLink}>
+                  Open in Maps
+                </a>
+              </>
+            )}
+          </article>
+        )}
+        {shared?.view === "gone" && (
+          <Notice
+            picture="cap"
+            headline="Not available"
+            body="This place isn’t available anymore. Spin for somewhere that’s open."
+            actions={
+              <Button variant="paper" onClick={spinOwn}>
+                Spin your own
+              </Button>
+            }
+          />
+        )}
+        {shared && sharedError && (
+          <Notice
+            headline={sharedError.headline}
+            body={sharedError.body}
+            actions={
+              <Button variant="paper" onClick={() => void openShared(shared.id)}>
+                Try again
+              </Button>
+            }
+          />
         )}
         {notice?.kind === "empty" && (
           <Notice
@@ -317,7 +443,7 @@ export function NearMe() {
         )}
       </div>
 
-      {!pick && !notice && !showRefused && (
+      {!pick && !notice && !showRefused && !shared && (
         <>
           <button
             ref={summary}

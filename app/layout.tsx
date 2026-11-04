@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://built4you.jasperntc.dev"),
   title: "Lapar Wheel",
   description: "Spin a wheel to pick where to eat near you.",
+  // Every ?p= share link is the same page to search engines.
+  alternates: { canonical: "https://built4you.jasperntc.dev/lapar-wheel" },
   icons: {
     icon: `${base}favicon-32.png`,
     apple: `${base}apple-touch-icon.png`,

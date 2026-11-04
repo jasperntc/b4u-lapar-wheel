@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { buttonRow } from "./Button";
 
 const base = import.meta.env.BASE_URL;
 
@@ -44,13 +45,17 @@ export function Notice({ picture, kicker, headline, body, actions, children }: P
             />
           ))}
         <div className="flex min-w-0 flex-col gap-1">
-          {kicker && <p className="text-notice-kicker text-paper-kicker">{kicker}</p>}
+          {/* Balanced and pretty wraps: no word left alone on a line on 360px phones. */}
+          {kicker && <p className="text-notice-kicker text-balance text-paper-kicker">{kicker}</p>}
           <h2 className="font-sign text-notice-title">{headline}</h2>
         </div>
       </div>
-      {typeof body === "string" ? <p className="text-notice-body">{body}</p> : body && <div className="text-notice-body">{body}</div>}
-      {/* Each button grows to fill and never wraps its label; two that don't fit stack. */}
-      <div className="flex flex-wrap gap-2 *:flex-auto *:whitespace-nowrap">{actions}</div>
+      {typeof body === "string" ? (
+        <p className="text-notice-body text-pretty">{body}</p>
+      ) : (
+        body && <div className="text-notice-body text-pretty">{body}</div>
+      )}
+      <div className={buttonRow}>{actions}</div>
       {children}
     </div>
   );
