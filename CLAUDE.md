@@ -56,11 +56,11 @@ CI runs audit, lint, typecheck, test and build on every PR. Run all of them befo
   - Pro fields only, with no photos. The search field mask is `places.id`, `places.displayName`, `places.location`, `places.primaryType`.
   - The one Enterprise exception is `currentOpeningHours.openNow`, for halal-mode picks only.
   - Share links check `businessStatus` (Pro).
-  - A per-IP rate limit of 20 requests a minute (friends often share an IP). When it's hit, show "Slow down, try again in a minute."
+  - A per-IP rate limit of 20 requests a minute (friends often share an IP). When it's hit, show "Slow down" with "Try again in a minute."
   - A hard cap of 150 Google calls a day across both endpoints, reset at midnight Malaysia time. Google's free trial allows no quota, so this counter is the real limit. I keep a budget alert in Google Cloud.
-  - A per-IP daily limit (2026-11-02): 30 Google calls a day per IP, reset at midnight Malaysia time. When it's hit, show "You’ve used today’s spins. Try again tomorrow." The shared cap stays at 150.
+  - A per-IP daily limit (2026-11-02): 30 Google calls a day per IP, reset at midnight Malaysia time. When it's hit, show "You’ve used today’s spins" with "Everyone gets 30 a day. They come back at 12 am Malaysia time." The shared cap stays at 150.
   - All three limits live in one Durable Object (`worker/limits.ts`), so the counts are exact. The per-IP counts are kept in memory only, never in storage.
-  - When the cap is hit, near me shows "Lapar Wheel is out of spins for today". Halal mode still picks from the certified list by `jakimName`, without the open-now check, labelled "Couldn't check if it's open right now. Check Maps before you go." Share links show only an Open in Maps button (`query=restaurant` beside `query_place_id`).
+  - When the cap is hit, near me shows "Out of spins for today" with "Lapar Wheel has a daily limit so it stays free. Spins come back at 12 am Malaysia time." Halal mode still picks from the certified list by `jakimName`, without the open-now check, labelled "Couldn't check if it's open right now. Check Maps before you go." Share links show only an Open in Maps button (`query=restaurant` beside `query_place_id`).
 - **Area:** near me works anywhere. Halal mode and the area picker are greater KK only. When location is refused, show "Allow location to spin near you, or pick an area in Kota Kinabalu" with the picker, unless an earlier location fix showed the user is outside KK; then show only "Allow location to spin near you."
 - **Cuisine:** UI choices map to Google's Table A types: Chinese, Japanese, Korean, Thai, Indian, Indonesian, Seafood, Fast food, Cafe, and Malaysian (`malaysian_restaurant`). There's no Malay type. Never use `halal_restaurant`.
 - **Attribution:** wherever Google results appear without a Google map, show the Google logo (16–19 px high), or the text "Google Maps" if space is tight, in the same container. Never draw Google results on a non-Google map.
@@ -118,14 +118,14 @@ Parked on 2026-10-28: see `docs/data/README.md`. The data and scripts stay. The 
 
 ## Brand
 
-- docs/brand.md and docs/brand-logos.md are the rules for colour, type, logo and copy, copied from the hub. They win over any skill's defaults.
-- Use only the CSS variables in app/brand-tokens.css, which is copied as-is from the hub. Don't edit it here. No raw hex values anywhere else. A test checks this.
-- Use the frontend-design skill for layout, hierarchy, copy and motion decisions inside those rules.
+- Lapar Wheel has its own look, kopitiam by day and pasar malam by night, with a thin Built4You credit. docs/redesign.md is the design spec (approved 2026-11-04). It wins over any skill's defaults.
+- Colours, fonts, shadows and the wheel's segment colours live in app/lapar-tokens.css, switched on `[data-look="day|night"]`. app/brand-tokens.css is copied as-is from the hub and now only serves the Built4You credit; don't edit it here. No raw hex values outside these two files. A test checks this.
+- Use the frontend-design skill for layout, hierarchy and copy decisions inside these rules.
 - Spacing uses only the steps in app/brand-tokens.css (1, 2, 3, 4, 6, 8, 12, 16). A test checks this.
-- Type sizes are the roles in app/globals.css (`text-display-xl`, `text-display`, `text-title`, `text-stamp-text`, `text-body`, `text-body-sm`, `text-button`, `text-hand`). Use only these roles.
-- The seven `wheel-*` colours are for the wheel, which is the one multicolour thing in the series. `radius-pill` is only for the spin button.
-- The spin is this page's one motion. No fade-up on scroll.
-- Body copy sits on `surface-label` labels on the kraft ground. Only the headline sits directly on kraft.
+- Type sizes are the roles in app/globals.css (`text-title`, `text-place`, `text-spin-label`, `text-sheet-title`, `text-body`, `text-sub`, `text-small`, `text-kicker`, `text-button`, and for notices `text-notice-title`, `text-notice-kicker`, `text-notice-body`). Use only these roles. Bungee (`font-sign`) has only capitals, so only the title, place, spin, sheet-title and notice-title roles use it.
+- Labels, buttons and copy are in sentence case. Buttons and chips are pill-shaped.
+- Every text pair passes WCAG AA (4.5:1) in both looks. A test checks the token pairs.
+- Motion is only what docs/redesign.md lists: the spin, the lights coming on (day to night only), the filter sheet's slide-up, the result card's rise, and a notice dimming the wheel (and, out of spins at night, the stall's lights going off). Ticks, the landing buzz, swipe, the waiting spin and the bulb chase come in the next PR. Nothing else moves: no page-load animation, no fade-up on scroll. Everything respects `prefers-reduced-motion` and a hidden page: no animation, same result.
 - It must not look like the portfolio.
 - Works at phone width first. Most visitors come from an Instagram story.
 

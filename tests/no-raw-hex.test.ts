@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { read, sourceFiles } from "./source-files";
 
-// The one place hex values may live.
-const ALLOWED = new Set(["app/brand-tokens.css"]);
+// The two places hex values may live: the Built4You tokens (for the credit) and Lapar Wheel's own.
+const ALLOWED = new Set(["app/brand-tokens.css", "app/lapar-tokens.css"]);
 
 // #rgb, #rgba, #rrggbb or #rrggbbaa, not followed by another word character.
 // "#Built4You" and "#episodes" don't match. An anchor made only of hex letters
@@ -19,7 +19,7 @@ describe("raw hex colours", () => {
     expect(found('href="#episodes"')).toEqual([]);
   });
 
-  it("appear only in app/brand-tokens.css", () => {
+  it("appear only in the two token files", () => {
     const files = sourceFiles();
     expect(files.length).toBeGreaterThan(0);
 

@@ -1,39 +1,21 @@
-import type { TransitionEvent } from "react";
+import type { CSSProperties, TransitionEvent } from "react";
+import { lightTimings, WHEEL_BULBS } from "@/lib/look";
 import { SPIN_MS } from "@/lib/near-me";
 
-/** Wheel colours in segment order, alternating dark and light text so neighbours stand apart. */
-export const WHEEL_COLOURS = ["tomato", "marigold", "sea", "plum", "leaf", "denim", "rose"] as const;
-/** The text token that passes AA on each colour. A test checks the ratios. */
-export const WHEEL_TEXT: Record<(typeof WHEEL_COLOURS)[number], "on-wheel-dark" | "on-wheel-light"> = {
-  tomato: "on-wheel-light",
-  marigold: "on-wheel-dark",
-  sea: "on-wheel-dark",
-  plum: "on-wheel-light",
-  leaf: "on-wheel-dark",
-  denim: "on-wheel-light",
-  rose: "on-wheel-dark",
-};
-// Full class names, so Tailwind sees them.
-const FILL = {
-  tomato: "fill-wheel-tomato",
-  marigold: "fill-wheel-marigold",
-  sea: "fill-wheel-sea",
-  plum: "fill-wheel-plum",
-  leaf: "fill-wheel-leaf",
-  denim: "fill-wheel-denim",
-  rose: "fill-wheel-rose",
-  "on-wheel-dark": "fill-on-wheel-dark",
-  "on-wheel-light": "fill-on-wheel-light",
-};
+/** Segment colours per look: --seg-1 to --seg-6 and their --seg-N-text in app/lapar-tokens.css. A test checks the ratios. */
+export const SEGMENT_COLOURS = 6;
 
 const C = 160;
 const R = 150;
 const MAX_CHARS = 13;
 const PLACEHOLDER = Array.from({ length: 10 }, () => "");
+const BULB_R = 0.967 * R;
+const base = import.meta.env.BASE_URL;
+const bulbs = lightTimings().wheel;
 
-/** Segment i's colour. When the last segment would repeat the first, it takes one that differs from both neighbours. */
+/** Segment i's colour index. When the last segment would repeat the first, it takes one that differs from both neighbours. */
 export function segmentColour(i: number, n: number) {
-  return WHEEL_COLOURS[n > 1 && n % WHEEL_COLOURS.length === 1 && i === n - 1 ? 2 : i % WHEEL_COLOURS.length];
+  return n > 1 && n % SEGMENT_COLOURS === 1 && i === n - 1 ? 2 : i % SEGMENT_COLOURS;
 }
 
 function point(deg: number, r: number) {
@@ -53,18 +35,23 @@ type Props = {
   rotation: number;
   /** False jumps straight to the rotation, for a spin whose animation is skipped. */
   animate: boolean;
+  /** True while a spin is under way; the lights coming on skip the wheel bulbs then. */
+  spinning: boolean;
   onSpinEnd: () => void;
 };
 
-/** The multicolour spinner. It only animates to the rotation it's given; the pick is made before. */
-export function Wheel({ names, rotation, animate, onSpinEnd }: Props) {
+/**
+ * The multicolour spinner. It only animates to the rotation it's given; the pick is made before.
+ * Both looks are drawn, and CSS on [data-look] shows one: the day rim, or the night plate ring and bulbs.
+ */
+export function Wheel({ names, rotation, animate, spinning, onSpinEnd }: Props) {
   const labels = names.length ? names : PLACEHOLDER;
   const n = labels.length;
   const seg = 360 / n;
   const ended = (e: TransitionEvent) => e.target === e.currentTarget && onSpinEnd();
 
   return (
-    <div className="relative mx-auto w-full max-w-[22rem]" aria-hidden="true">
+    <div className="relative mx-auto w-full max-w-[300px]" aria-hidden="true" data-spinning={spinning || undefined}>
       <div
         className={
           animate ? "transition-transform ease-[cubic-bezier(0.15,0.75,0.1,1)] motion-reduce:transition-none" : "transition-none"
@@ -73,41 +60,73 @@ export function Wheel({ names, rotation, animate, onSpinEnd }: Props) {
         onTransitionEnd={ended}
       >
         <svg viewBox="0 0 320 320" className="block w-full">
-          {labels.map((name, i) => {
-            const colour = segmentColour(i, n);
-            const mid = (i + 0.5) * seg;
+          <circle cx={C} cy={C} r={R - 1} strokeWidth="2" className="fill-plate stroke-wheel-edge" />
+          <g className="wheel-face">
+            {labels.map((name, i) => {
+              const c = segmentColour(i, n) + 1;
+              const mid = (i + 0.5) * seg;
+              const fill = { fill: `var(--seg-${c})` };
+              return (
+                <g key={i}>
+                  {n === 1 ? (
+                    <circle cx={C} cy={C} r={R} style={fill} strokeWidth="2" className="stroke-seg-stroke" />
+                  ) : (
+                    <path
+                      d={`M ${C} ${C} L ${point(i * seg, R)} A ${R} ${R} 0 ${seg > 180 ? 1 : 0} 1 ${point((i + 1) * seg, R)} Z`}
+                      style={fill}
+                      strokeWidth="2"
+                      className="stroke-seg-stroke"
+                    />
+                  )}
+                  {name && (
+                    <text
+                      x={C + R - 10}
+                      y={C}
+                      transform={`rotate(${mid - 90} ${C} ${C})`}
+                      textAnchor="end"
+                      dominantBaseline="central"
+                      style={{ fill: `var(--seg-${c}-text)` }}
+                      className="wheel-label font-semibold"
+                    >
+                      {short(name)}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          </g>
+          {/* The floral melamine rim turns with the wheel. */}
+          <image href={`${base}images/wheel-rim-day.png`} x={C - R} y={C - R} width={2 * R} height={2 * R} className="night:hidden" />
+        </svg>
+      </div>
+
+      {/* The still parts: sheen, night plate ring and bulbs, hub and pointer. */}
+      <svg viewBox="0 0 320 320" className="pointer-events-none absolute inset-0 block w-full">
+        <defs>
+          <radialGradient id="wheel-sheen" cx="35%" cy="28%" r="70%">
+            <stop offset="0%" style={{ stopColor: "var(--sheen-hi)", stopOpacity: 0.35 }} />
+            <stop offset="45%" style={{ stopColor: "var(--sheen-hi)", stopOpacity: 0.06 }} />
+            <stop offset="100%" style={{ stopColor: "var(--sheen-lo)", stopOpacity: 0.12 }} />
+          </radialGradient>
+        </defs>
+        <circle cx={C} cy={C} r={R} fill="url(#wheel-sheen)" className="wheel-face" />
+        <g className="day:hidden">
+          <circle cx={C} cy={C} r={0.93 * R} fill="none" strokeWidth="6" className="stroke-plate" />
+          {bulbs.map((b, k) => {
+            const a = (2 * Math.PI * k) / WHEEL_BULBS;
+            const [x, y] = [C + BULB_R * Math.sin(a), C - BULB_R * Math.cos(a)];
             return (
-              <g key={i}>
-                {n === 1 ? (
-                  <circle cx={C} cy={C} r={R} className={FILL[colour]} />
-                ) : (
-                  <path
-                    d={`M ${C} ${C} L ${point(i * seg, R)} A ${R} ${R} 0 ${seg > 180 ? 1 : 0} 1 ${point((i + 1) * seg, R)} Z`}
-                    className={FILL[colour]}
-                  />
-                )}
-                {name && (
-                  <text
-                    x={C + R - 10}
-                    y={C}
-                    transform={`rotate(${mid - 90} ${C} ${C})`}
-                    textAnchor="end"
-                    dominantBaseline="central"
-                    className={`text-body-sm font-semibold ${FILL[WHEEL_TEXT[colour]]}`}
-                  >
-                    {short(name)}
-                  </text>
-                )}
+              <g key={k} className="wheel-bulb" style={{ "--delay": `${b.delay}ms` } as CSSProperties}>
+                <circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="5.5" opacity="0.45" className="fill-bulb" />
+                <circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="2.6" className="fill-bulb-core" />
               </g>
             );
           })}
-          <circle cx={C} cy={C} r={R} fill="none" strokeWidth="4" className="stroke-wheel-rim" />
-          <circle cx={C} cy={C} r="16" strokeWidth="4" className="fill-surface-label stroke-wheel-rim" />
-        </svg>
-      </div>
-      {/* The pointer stays still at the top. */}
+        </g>
+        <circle cx={C} cy={C} r="20" strokeWidth="3" className="fill-hub stroke-hub-edge" />
+      </svg>
       <svg viewBox="0 0 32 32" className="absolute top-0 left-1/2 w-8 -translate-x-1/2 -translate-y-1/4">
-        <path d="M 4 4 L 28 4 L 16 28 Z" strokeWidth="2" strokeLinejoin="round" className="fill-wheel-rim stroke-surface-label" />
+        <path d="M 4 4 L 28 4 L 16 28 Z" strokeWidth="1.5" strokeLinejoin="round" className="fill-pointer stroke-seg-stroke" />
       </svg>
     </div>
   );

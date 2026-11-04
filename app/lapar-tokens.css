@@ -1,0 +1,162 @@
+/* Lapar Wheel's own look: kopitiam by day, pasar malam by night (docs/redesign.md).
+   The inline script in app/layout.tsx sets data-look on <html> before first paint.
+   With app/brand-tokens.css, the only file that may hold hex values. Imported after
+   it, so these win over the brand's :root. */
+
+:root {
+  --font-sign: Bungee, Figtree, sans-serif;
+  --font-body: Figtree, system-ui, sans-serif;
+  --sign: #1f6b4a;
+  --sign-shadow: #134430;
+  --bulb: #ffd98a;
+  --bulb-core: #fff3cf;
+  --sheen-hi: #ffffff;
+  --sheen-lo: #000000;
+  --backdrop: rgba(20, 16, 30, 0.55);
+
+  /* Notices: paper taped to the wall, the pictures' own cream in both looks. */
+  --paper: #f6e8cc;
+  --paper-ink: #1d1d1b;
+  --tape: rgba(255, 250, 232, 0.78);
+  --shadow-tape: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+[data-look="day"] {
+  color-scheme: light;
+  --ground: #f7f8f4;
+  --ground-glow: transparent;
+  --ink: #1d1d1b;
+  --ink-soft: #4a4a44;
+  --edge: 2px;
+  --panel: #ffffff;
+  --panel-edge: #1d1d1b;
+  --card-edge: #1d1d1b;
+  --shadow-panel: 0 4px 0 #1d1d1b;
+  --shadow-card: 0 4px 0 #1d1d1b;
+  --spin: #c8342b;
+  --on-spin: #ffffff;
+  --spin-edge: #1d1d1b;
+  --shadow-spin: 0 4px 0 #1d1d1b;
+  --maps: #1f6b4a;
+  --on-maps: #ffffff;
+  --maps-edge: #1d1d1b;
+  --accent: #1f6b4a;
+  --on-accent: #ffffff;
+  --ghost: #ffffff;
+  --ghost-edge: #1d1d1b;
+  --subtle-edge: #1d1d1b;
+  --field: #ffffff;
+  --title-ink: #eef3ec;
+  --title-glow: none;
+  --focus: #1d1d1b;
+  --pointer: #c8342b;
+  --lamp: #1f6b4a;
+  --lamp-glow: 0 2px 0 #fff3cf;
+  --grain: #1d1d1b;
+  --grain-blend: multiply;
+  --grain-opacity: 0.16;
+
+  /* Wheel. Segments fill 0.8 of the radius; the rim image covers the rest. */
+  --seg-scale: 0.8;
+  --seg-1: #1f6b4a;
+  --seg-1-text: #ffffff;
+  --seg-2: #eef3ec;
+  --seg-2-text: #1d1d1b;
+  --seg-3: #c8342b;
+  --seg-3-text: #ffffff;
+  --seg-4: #e9a825;
+  --seg-4-text: #1d1d1b;
+  --seg-5: #2a7f86;
+  --seg-5-text: #ffffff;
+  --seg-6: #9cc9a6;
+  --seg-6-text: #1d1d1b;
+  --seg-stroke: #1d1d1b;
+  --plate: transparent;
+  --hub: #eef3ec;
+  --hub-edge: #1f6b4a;
+  --wheel-edge: #1f6b4a;
+
+  --paper-edge: #1d1d1b;
+  --shadow-paper: 0 4px 0 #1d1d1b;
+  --paper-kicker: #1f6b4a;
+  --paper-action: #1f6b4a;
+  --on-paper-action: #ffffff;
+}
+
+[data-look="night"] {
+  color-scheme: dark;
+  --ground: #1a1530;
+  --ground-glow: rgba(255, 154, 60, 0.18);
+  --ink: #f3e9d8;
+  --ink-soft: #c9bfd9;
+  --edge: 1.5px;
+  --panel: #241e3d;
+  --panel-edge: #3d3660;
+  --card-edge: #ffd23f;
+  --shadow-panel: none;
+  --shadow-card: 0 0 28px rgba(255, 210, 63, 0.18);
+  --spin: #ff4f8b;
+  --on-spin: #1a1530;
+  --spin-edge: #1a1530;
+  --shadow-spin: 0 0 24px rgba(255, 79, 139, 0.55);
+  --maps: #ff4f8b;
+  --on-maps: #1a1530;
+  --maps-edge: #1a1530;
+  --accent: #ffd23f;
+  --on-accent: #1a1530;
+  --ghost: transparent;
+  --ghost-edge: #f3e9d8;
+  --subtle-edge: #3d3660;
+  --field: #1a1530;
+  --title-ink: #ffe7f0;
+  --title-glow: 0 0 6px #ff4f8b, 0 0 18px #ff4f8b;
+  --focus: #ffd23f;
+  --pointer: #ff4f8b;
+  --lamp: #ffd98a;
+  --lamp-glow: 0 0 10px 3px rgba(255, 217, 138, 0.55);
+  --grain: #f3e9d8;
+  --grain-blend: screen;
+  --grain-opacity: 0.07;
+
+  /* Wheel. Segments fill 0.93 of the radius, inside the plate ring and bulbs. */
+  --seg-scale: 0.93;
+  --seg-1: #ff4f8b;
+  --seg-1-text: #1a1530;
+  --seg-2: #ffd23f;
+  --seg-2-text: #1a1530;
+  --seg-3: #2fd1c4;
+  --seg-3-text: #1a1530;
+  --seg-4: #5b3fd9;
+  --seg-4-text: #ffffff;
+  --seg-5: #ff9a3c;
+  --seg-5-text: #1a1530;
+  --seg-6: #9be15d;
+  --seg-6-text: #1a1530;
+  --seg-stroke: #1a1530;
+  --plate: #2a2540;
+  --hub: #1a1530;
+  --hub-edge: #ffd98a;
+  --wheel-edge: #3d3660;
+
+  --paper-edge: #1a1530;
+  --shadow-paper: 0 0 0 1px rgba(255, 217, 138, 0.25), 0 0 36px rgba(255, 217, 138, 0.28);
+  --paper-kicker: #5b3fd9;
+  --paper-action: #ff4f8b;
+  --on-paper-action: #1a1530;
+
+  /* The stall closed: out of spins at night, the roof bulbs and neon go off. */
+  --lamp-off: #4a4560;
+  --title-off: #8a7f9e;
+}
+
+/* Inside a paper notice the paper stays cream, so text and fields (the area picker) keep
+   the day colours in both looks. */
+.paper {
+  color-scheme: light;
+  --ink: #1d1d1b;
+  --ink-soft: #4a4a44;
+  --field: #ffffff;
+  --ghost-edge: #1d1d1b;
+  --edge: 2px;
+  --focus: #1d1d1b;
+}
