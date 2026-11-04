@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { buttonRow } from "./Button";
 
 const base = import.meta.env.BASE_URL;
 
@@ -49,8 +50,7 @@ export function Notice({ picture, kicker, headline, body, actions, children }: P
         </div>
       </div>
       {typeof body === "string" ? <p className="text-notice-body">{body}</p> : body && <div className="text-notice-body">{body}</div>}
-      {/* Each button grows to fill and never wraps its label; two that don't fit stack. */}
-      <div className="flex flex-wrap gap-2 *:flex-auto *:whitespace-nowrap">{actions}</div>
+      <div className={buttonRow}>{actions}</div>
       {children}
     </div>
   );

@@ -15,6 +15,11 @@ describe("next.config", () => {
     expect(nextConfig.basePath).toBe("/lapar-wheel");
   });
 
+  it("gives every ?p= share link the page without p as its canonical url", async () => {
+    const { metadata } = await import("../app/layout");
+    expect(metadata.alternates?.canonical).toBe("https://built4you.jasperntc.dev/lapar-wheel");
+  });
+
   it("loads fonts from under the basePath", () => {
     // CSS url()s don't get the basePath, so globals.css spells it out.
     const urls = [...read("app/globals.css").matchAll(/url\("(\/[^"]+\.woff2)"\)/g)].map((m) => m[1]);
