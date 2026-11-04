@@ -347,7 +347,7 @@ describe("limits", () => {
   it("returns daily_cap once today's Google calls are used, on both endpoints", async () => {
     const { env, store } = fakeEnv();
     store.set("cap", { day: malaysiaDay(Date.now()), count: DAILY_CAP });
-    for (const res of [await nearby(env, { ...DAMAI, radiusKm: 1 }), await place(env, "ChIJabc")]) {
+    for (const res of [await nearby(env, { ...DAMAI, radiusKm: 1 }), await place(env, "ChIJabcdefghijkl0")]) {
       expect(res.status).toBe(429);
       expect(Number(res.headers.get("Retry-After"))).toBeGreaterThan(0);
       expect(await res.json()).toEqual({ error: "daily_cap" });
@@ -358,31 +358,31 @@ describe("limits", () => {
   it("counts both endpoints toward the cap", async () => {
     const { env, store } = fakeEnv();
     await nearby(env, { ...DAMAI, radiusKm: 1 });
-    await place(env, "ChIJabc");
+    await place(env, "ChIJabcdefghijkl0");
     expect(store.get("cap")).toMatchObject({ count: 2 });
   });
 });
 
 describe("GET /place/:id", () => {
   it("checks businessStatus (Pro) by default, for share links", async () => {
-    google.mockResolvedValue(Response.json({ id: "ChIJabc", displayName: { text: "Kedai" }, businessStatus: "OPERATIONAL" }));
-    const res = await place(fakeEnv().env, "ChIJabc");
-    expect(google.mock.calls[0][0]).toBe("https://places.googleapis.com/v1/places/ChIJabc?languageCode=en");
+    google.mockResolvedValue(Response.json({ id: "ChIJabcdefghijkl0", displayName: { text: "Kedai" }, businessStatus: "OPERATIONAL" }));
+    const res = await place(fakeEnv().env, "ChIJabcdefghijkl0");
+    expect(google.mock.calls[0][0]).toBe("https://places.googleapis.com/v1/places/ChIJabcdefghijkl0?languageCode=en");
     expect(sentHeaders().get("X-Goog-FieldMask")).toBe("id,displayName,businessStatus");
-    expect(await res.json()).toEqual({ id: "ChIJabc", name: "Kedai", available: true });
+    expect(await res.json()).toEqual({ id: "ChIJabcdefghijkl0", name: "Kedai", available: true });
   });
 
   it("marks a closed place unavailable", async () => {
     google.mockResolvedValue(Response.json({ displayName: { text: "Kedai" }, businessStatus: "CLOSED_PERMANENTLY" }));
-    expect(await (await place(fakeEnv().env, "ChIJabc?check=status")).json()).toMatchObject({ available: false });
+    expect(await (await place(fakeEnv().env, "ChIJabcdefghijkl0?check=status")).json()).toMatchObject({ available: false });
   });
 
   it("checks openNow (Enterprise) only when asked, for halal picks", async () => {
     google.mockResolvedValue(Response.json({ displayName: { text: "Kedai" }, currentOpeningHours: { openNow: true } }));
-    const res = await place(fakeEnv().env, "ChIJabc?check=openNow");
+    const res = await place(fakeEnv().env, "ChIJabcdefghijkl0?check=openNow");
     expect(sentHeaders().get("X-Goog-FieldMask")).toBe(DETAILS_FIELDS.openNow);
     expect(DETAILS_FIELDS.openNow).toBe("id,displayName,currentOpeningHours.openNow");
-    expect(await res.json()).toEqual({ id: "ChIJabc", name: "Kedai", available: true });
+    expect(await res.json()).toEqual({ id: "ChIJabcdefghijkl0", name: "Kedai", available: true });
   });
 
   it.each([
@@ -390,17 +390,17 @@ describe("GET /place/:id", () => {
     ["with no hours", {}],
   ])("marks a place %s unavailable", async (_, extra) => {
     google.mockResolvedValue(Response.json({ displayName: { text: "Kedai" }, ...extra }));
-    expect(await (await place(fakeEnv().env, "ChIJabc?check=openNow")).json()).toMatchObject({ available: false });
+    expect(await (await place(fakeEnv().env, "ChIJabcdefghijkl0?check=openNow")).json()).toMatchObject({ available: false });
   });
 
   it("answers not available when Google doesn't know the place", async () => {
     google.mockResolvedValue(Response.json({ error: { code: 404 } }, { status: 404 }));
-    expect(await (await place(fakeEnv().env, "ChIJgone")).json()).toEqual({ id: "ChIJgone", name: null, available: false });
+    expect(await (await place(fakeEnv().env, "ChIJgonegonegone0")).json()).toEqual({ id: "ChIJgonegonegone0", name: null, available: false });
   });
 
   it("returns upstream for other Google errors, such as a bad key", async () => {
     google.mockResolvedValue(new Response("API key not valid", { status: 400 }));
-    const res = await place(fakeEnv().env, "ChIJabc");
+    const res = await place(fakeEnv().env, "ChIJabcdefghijkl0");
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({ error: "upstream" });
   });
@@ -409,13 +409,45 @@ describe("GET /place/:id", () => {
     google.mockResolvedValue(
       Response.json({ displayName: { text: "Kedai" }, businessStatus: "OPERATIONAL", rating: 4.9, formattedAddress: "Secret" }),
     );
-    expect(Object.keys(await (await place(fakeEnv().env, "ChIJabc")).json()).sort()).toEqual(["available", "id", "name"]);
+    expect(Object.keys(await (await place(fakeEnv().env, "ChIJabcdefghijkl0")).json()).sort()).toEqual(["available", "id", "name"]);
   });
 
-  it.each([["%24bad"], ["a/b"], ["ChIJabc?check=rating"], ["ChIJabc?check="]])("rejects %s without calling Google", async (path) => {
+  it.each([["%24bad"], ["a/b"], ["ChIJabcdefghijkl0?check=rating"], ["ChIJabcdefghijkl0?check="]])("rejects %s without calling Google", async (path) => {
     const res = await place(fakeEnv().env, path);
     expect(res.status).toBe(400);
     expect(google).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["abc", "abc"],
+    ["15 characters", "a".repeat(15)],
+    ["257 characters", "a".repeat(257)],
+    ["a dot", "ChIJabcdefghijkl0.x"],
+    ["a percent-encoded slash", "ChIJabcdefghijkl0%2Fx"],
+    ["a space", "ChIJabcdefghijkl0%20x"],
+    ["an emoji", "ChIJabcdefghijkl0%F0%9F%8D%9C"],
+  ])("answers %s with 400 before the limits and Google", async (_, id) => {
+    const { env, store } = fakeEnv();
+    // More than a minute's rate limit: if any of these were counted, the valid call below would be refused.
+    for (let i = 0; i <= RATE_LIMIT; i++) {
+      const res = await place(env, id);
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "bad_request" });
+    }
+    expect(google).not.toHaveBeenCalled();
+    expect(store.get("cap")).toBeUndefined();
+    google.mockResolvedValue(Response.json({ displayName: { text: "Kedai" }, businessStatus: "OPERATIONAL" }));
+    expect((await place(env, "ChIJabcdefghijkl0")).status).toBe(200);
+    expect(google).toHaveBeenCalledTimes(1);
+    expect(store.get("cap")).toMatchObject({ count: 1 });
+  });
+
+  it("accepts 16 and 256 characters, one Google call each", async () => {
+    google.mockImplementation(async () => Response.json({ displayName: { text: "Kedai" }, businessStatus: "OPERATIONAL" }));
+    const { env } = fakeEnv();
+    expect((await place(env, "a".repeat(16))).status).toBe(200);
+    expect((await place(env, "a".repeat(256))).status).toBe(200);
+    expect(google).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -431,7 +463,7 @@ describe("encoding", () => {
 
   it.each([
     ["nearby", () => nearby(fakeEnv().env, { ...DAMAI, radiusKm: 1 })],
-    ["place", () => place(fakeEnv().env, "ChIJabc")],
+    ["place", () => place(fakeEnv().env, "ChIJabcdefghijkl0")],
     ["bad_request", () => nearby(fakeEnv().env, "{lat:")],
     ["method_not_allowed", () => handle(new Request(`${BASE}nearby`), fakeEnv().env)],
     ["not_found", () => handle(new Request(`${BASE}spin`), fakeEnv().env)],
@@ -449,7 +481,7 @@ describe("encoding", () => {
 
   it("round-trips a Chinese name through /place", async () => {
     google.mockResolvedValue(bytes({ id: "cn", displayName: { text: NAME }, businessStatus: "OPERATIONAL" }));
-    expect(await decoded(await place(fakeEnv().env, "cn"))).toEqual({ id: "cn", name: NAME, available: true });
+    expect(await decoded(await place(fakeEnv().env, "ChIJchinesename00"))).toEqual({ id: "ChIJchinesename00", name: NAME, available: true });
   });
 });
 

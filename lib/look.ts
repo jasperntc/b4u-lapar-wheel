@@ -14,9 +14,11 @@ export function lookFor(choice: LookChoice, hour: number): Look {
 /**
  * The inline script in <head> that sets data-look and theme-color before first paint, so a night
  * visit never flashes the day look. Same rule as lookFor; a test runs it against lookFor.
+ * It makes the page's only theme-color meta itself: one rendered by React was re-inserted on hydration
+ * whenever the script had changed its colour, leaving a second, day-coloured meta at night.
  */
 export function lookScript(themeColor: Record<Look, string>): string {
-  return `(function(){var c;try{c=localStorage.getItem(${JSON.stringify(LOOK_KEY)})}catch(e){}var h=new Date().getHours();var n=c==="night"||(c!=="day"&&(h>=19||h<6));document.documentElement.setAttribute("data-look",n?"night":"day");var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",n?${JSON.stringify(themeColor.night)}:${JSON.stringify(themeColor.day)})})()`;
+  return `(function(){var c;try{c=localStorage.getItem(${JSON.stringify(LOOK_KEY)})}catch(e){}var h=new Date().getHours();var n=c==="night"||(c!=="day"&&(h>=19||h<6));document.documentElement.setAttribute("data-look",n?"night":"day");var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.setAttribute("name","theme-color");document.head.appendChild(m)}m.setAttribute("content",n?${JSON.stringify(themeColor.night)}:${JSON.stringify(themeColor.day)})})()`;
 }
 
 /** Lights come on only for a day-to-night change while the page is open: never on load, hidden or reduced motion. */

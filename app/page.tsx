@@ -1,12 +1,9 @@
 import type { CSSProperties } from "react";
-import Image from "next/image";
 import { LookSwitch } from "@/components/LookSwitch";
 import { NearMe } from "@/components/NearMe";
 import { lightTimings } from "@/lib/look";
 import { laparToken } from "@/lib/tokens";
 
-// "/lapar-wheel/": plain paths like these don't get the basePath on their own.
-const base = import.meta.env.BASE_URL;
 const lights = lightTimings();
 const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as CSSProperties;
 
@@ -45,7 +42,15 @@ export default function Home() {
             href="https://built4you.jasperntc.dev"
             className="inline-flex items-center gap-2 font-display text-small text-ink-soft underline underline-offset-4"
           >
-            <Image src={`${base}brand/b4u-favicon.svg`} alt="" width={16} height={16} />
+            {/* The gift-tag mark, drawn here so it follows the app's look, not the OS setting like the favicon. */}
+            <svg aria-hidden="true" viewBox="0 0 32 32" className="size-3.5 fill-tag stroke-tag">
+              <path
+                fillRule="evenodd"
+                strokeWidth="2"
+                strokeLinejoin="round"
+                d="M6 8 L12 2 L20 2 L26 8 L26 30 L6 30 Z M13.8 8 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 Z"
+              />
+            </svg>
             Built4You, episode 1
           </a>
         </footer>

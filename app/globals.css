@@ -22,6 +22,7 @@
   --color-ground: var(--ground);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
+  --color-tag: var(--tag);
   --color-panel: var(--panel);
   --color-panel-edge: var(--panel-edge);
   --color-card-edge: var(--card-edge);

@@ -13,6 +13,7 @@
 // Privacy: the location is rounded to 3 decimals on arrival and only ever sent to Google.
 // Nothing here logs: no console calls, and Workers Logs are off in wrangler.jsonc.
 import { EARTH_RADIUS_M, haversineMeters } from "../lib/geo.ts";
+import { PLACE_ID } from "../lib/share.ts";
 import type { LimitResult } from "./limits.ts";
 
 // shortcut: bindings typed by hand, because the root tsconfig's DOM lib clashes with the Workers types;
@@ -34,7 +35,6 @@ export const DETAILS_FIELDS = {
 
 const RADII_KM = [1, 2, 5, 10];
 const DEFAULT_MIN_RATING = 4;
-const PLACE_ID = /^[A-Za-z0-9_-]{1,512}$/;
 
 /** UI cuisine -> Google Table A type. Never `halal_restaurant`: halal is never inferred. */
 export const CUISINES: Record<string, { type: string; query: string }> = {

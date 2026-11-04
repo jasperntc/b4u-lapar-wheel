@@ -32,12 +32,16 @@ describe("lookFor", () => {
 
 describe("lookScript", () => {
   /** Runs the inline script against a stub document, with what storage holds (or a throwing storage). */
-  function run(stored: string | null | Error, hour: number) {
+  function run(stored: string | null | Error, hour: number, existing = false) {
     const attrs: Record<string, string> = {};
     const meta: Record<string, string> = {};
+    const made = { setAttribute: (k: string, v: string) => (meta[k] = v) };
+    const appended: unknown[] = [];
     const document = {
       documentElement: { setAttribute: (k: string, v: string) => (attrs[k] = v) },
-      querySelector: () => ({ setAttribute: (k: string, v: string) => (meta[k] = v) }),
+      querySelector: () => (existing ? made : null),
+      createElement: () => made,
+      head: { appendChild: (el: unknown) => appended.push(el) },
     };
     const localStorage = {
       getItem: (key: string) => {
@@ -56,16 +60,22 @@ describe("lookScript", () => {
       localStorage,
       FakeDate,
     );
-    return { look: attrs["data-look"], themeColor: meta.content };
+    if (!existing && meta.name !== "theme-color") throw new Error("made a meta without the theme-color name");
+    return { look: attrs["data-look"], themeColor: meta.content, metas: appended.length };
   }
 
   it("agrees with lookFor for every choice at the edges", () => {
     for (const choice of ["auto", "day", "night"] as LookChoice[]) {
       for (const hour of [5, 6, 18, 19]) {
         const look = lookFor(choice, hour);
-        expect(run(choice === "auto" ? null : choice, hour), `${choice} at ${hour}`).toEqual({ look, themeColor: `#${look}` });
+        expect(run(choice === "auto" ? null : choice, hour), `${choice} at ${hour}`).toEqual({ look, themeColor: `#${look}`, metas: 1 });
       }
     }
+  });
+
+  it("makes the only theme-color meta, or reuses one that's already there", () => {
+    expect(run("night", 9).metas).toBe(1);
+    expect(run("night", 9, true)).toEqual({ look: "night", themeColor: "#night", metas: 0 });
   });
 
   it("treats an unknown value or throwing storage as Auto", () => {

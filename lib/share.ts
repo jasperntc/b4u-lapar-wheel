@@ -1,8 +1,11 @@
 // Share links: the url carries one place ID and nothing else (CLAUDE.md, Share links).
 
 export const SHARE_BASE = "https://built4you.jasperntc.dev/lapar-wheel";
-/** Google place IDs: URL-safe characters, never as short as 16. Anything else is dropped, never sent. */
-export const SHARE_ID = /^[A-Za-z0-9_-]{16,256}$/;
+/**
+ * A Google place ID: 16 to 256 URL-safe characters. The app drops anything else from a share link, and the
+ * Worker answers it with 400 before the limits and before Google. One pattern for both, so they can't drift.
+ */
+export const PLACE_ID = /^[A-Za-z0-9_-]{16,256}$/;
 
 export function shareUrl(id: string): string {
   return `${SHARE_BASE}?${new URLSearchParams({ p: id })}`;
@@ -12,7 +15,7 @@ export function shareUrl(id: string): string {
 export function readShareId(search: string): { id: string } | { drop: true } | null {
   const p = new URLSearchParams(search).get("p");
   if (p === null) return null;
-  return SHARE_ID.test(p) ? { id: p } : { drop: true };
+  return PLACE_ID.test(p) ? { id: p } : { drop: true };
 }
 
 /** The same url without `p`, for history.replaceState. */
