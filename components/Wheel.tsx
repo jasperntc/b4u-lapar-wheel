@@ -1,6 +1,7 @@
-import type { CSSProperties, TransitionEvent } from "react";
+import { useEffect, useRef, type CSSProperties, type PointerEvent } from "react";
 import { lightTimings, WHEEL_BULBS } from "@/lib/look";
-import { SPIN_MS } from "@/lib/near-me";
+import { tick, unlockAudio } from "@/lib/sound";
+import { isSwipe, type Spinner } from "@/lib/spin";
 
 /** Segment colours per look: --seg-1 to --seg-6 and their --seg-N-text in app/lapar-tokens.css. A test checks the ratios. */
 export const SEGMENT_COLOURS = 6;
@@ -31,34 +32,92 @@ function short(name: string) {
 type Props = {
   /** Segment labels, up to 20. Empty shows a blank wheel. */
   names: string[];
-  /** Degrees clockwise, from wheelRotation. */
-  rotation: number;
-  /** False jumps straight to the rotation, for a spin whose animation is skipped. */
-  animate: boolean;
-  /** True while a spin is under way; the lights coming on skip the wheel bulbs then. */
+  /** True while a spin is under way; the lights coming on leave the wheel bulbs to the chase then. */
   spinning: boolean;
-  onSpinEnd: () => void;
+  /** Turns the wheel; the pick is made before it's told where to land. */
+  spinner: Spinner;
+  /** Starts a spin from a fast release, with its signed speed. Null when a swipe can't start one. */
+  swipe: ((speed: number) => void) | null;
 };
 
+// A finger held still this long before letting go is a slow release, whatever its last move was.
+const STILL_MS = 100;
+
 /**
- * The multicolour spinner. It only animates to the rotation it's given; the pick is made before.
+ * The multicolour spinner. It only turns to the angle it's given; the pick is made before.
  * Both looks are drawn, and CSS on [data-look] shows one: the day rim, or the night plate ring and bulbs.
  */
-export function Wheel({ names, rotation, animate, spinning, onSpinEnd }: Props) {
+export function Wheel({ names, spinning, spinner, swipe }: Props) {
   const labels = names.length ? names : PLACEHOLDER;
   const n = labels.length;
   const seg = 360 / n;
-  const ended = (e: TransitionEvent) => e.target === e.currentTarget && onSpinEnd();
+  const wrap = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ angle: number; at: number; speed: number } | null>(null);
+
+  useEffect(() => {
+    spinner.setSegments(n);
+  }, [spinner, n]);
+
+  // Each tick clicks and steps the night bulb chase; it ends when the wheel stops.
+  useEffect(() => {
+    spinner.listen({
+      onTick: (segment) => {
+        tick();
+        if (wrap.current) wrap.current.dataset.chase = String(segment % 2);
+      },
+      onStop: () => delete wrap.current?.dataset.chase,
+    });
+    return () => spinner.listen({});
+  }, [spinner]);
+
+  function angleOf(e: PointerEvent) {
+    const r = e.currentTarget.getBoundingClientRect();
+    return (Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * 180) / Math.PI;
+  }
+
+  function down(e: PointerEvent<HTMLDivElement>) {
+    // A tap or swipe during a spin does nothing.
+    if (!swipe || spinner.moving) return;
+    unlockAudio();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    drag.current = { angle: angleOf(e), at: e.timeStamp, speed: 0 };
+  }
+
+  function move(e: PointerEvent<HTMLDivElement>) {
+    const d = drag.current;
+    if (!d) return;
+    const angle = angleOf(e);
+    const delta = ((angle - d.angle + 540) % 360) - 180;
+    d.speed = delta / Math.max(1, e.timeStamp - d.at);
+    d.angle = angle;
+    d.at = e.timeStamp;
+    spinner.drag(delta);
+  }
+
+  function up(e: PointerEvent<HTMLDivElement>) {
+    // A first touch-drag can't start audio; its release can.
+    unlockAudio();
+    const d = drag.current;
+    drag.current = null;
+    if (!d) return;
+    const speed = e.timeStamp - d.at > STILL_MS ? 0 : d.speed;
+    if (swipe && isSwipe(speed)) swipe(speed);
+    else delete wrap.current?.dataset.chase;
+  }
 
   return (
-    <div className="relative mx-auto w-full max-w-[300px]" aria-hidden="true" data-spinning={spinning || undefined}>
-      <div
-        className={
-          animate ? "transition-transform ease-[cubic-bezier(0.15,0.75,0.1,1)] motion-reduce:transition-none" : "transition-none"
-        }
-        style={{ transform: `rotate(${rotation}deg)`, transitionDuration: `${SPIN_MS}ms` }}
-        onTransitionEnd={ended}
-      >
+    <div
+      ref={wrap}
+      className={`relative mx-auto w-full max-w-[300px] ${swipe ? "cursor-grab touch-none select-none" : ""}`}
+      aria-hidden="true"
+      data-spinning={spinning || undefined}
+      onPointerDown={down}
+      onPointerMove={move}
+      onPointerUp={up}
+      onPointerCancel={up}
+    >
+      {/* Mid-turn, this square's corners reach past the wheel's box over the page around it; they never take a touch or a tap. */}
+      <div ref={(el) => spinner.attach(el)} className="pointer-events-none">
         <svg viewBox="0 0 320 320" className="block w-full">
           <circle cx={C} cy={C} r={R - 1} strokeWidth="2" className="fill-plate stroke-wheel-edge" />
           <g className="wheel-face">

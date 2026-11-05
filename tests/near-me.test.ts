@@ -120,6 +120,18 @@ describe("wheelRotation", () => {
       }
     }
   });
+  it("reaches the same segment backwards, by negative rotation, when told to", () => {
+    for (const n of [1, 3, 8, 20]) {
+      for (let index = 0; index < n; index++) {
+        const current = 123.4;
+        const back = wheelRotation(current, index, n, -1);
+        expect(current - back).toBeGreaterThanOrEqual(5 * 360);
+        expect(current - back).toBeLessThan(6 * 360);
+        const centre = ((((index + 0.5) * 360) / n + back) % 360 + 360) % 360;
+        expect(Math.min(centre, 360 - centre)).toBeCloseTo(0, 6);
+      }
+    }
+  });
 });
 
 describe("filterSummary", () => {
@@ -316,23 +328,23 @@ describe("awaitSpin", () => {
 
   it("shows the result at once on a hidden page, and only once", () => {
     const show = vi.fn();
-    const onTransitionEnd = awaitSpin(show, { hidden: true, reducedMotion: false });
+    const onLanded = awaitSpin(show, { hidden: true, reducedMotion: false });
     expect(show).toHaveBeenCalledTimes(1);
-    onTransitionEnd();
+    onLanded();
     vi.runAllTimers();
     expect(show).toHaveBeenCalledTimes(1);
   });
 
   it("shows the result at once under reduced motion, and only once", () => {
     const show = vi.fn();
-    const onTransitionEnd = awaitSpin(show, { hidden: false, reducedMotion: true });
+    const onLanded = awaitSpin(show, { hidden: false, reducedMotion: true });
     expect(show).toHaveBeenCalledTimes(1);
-    onTransitionEnd();
+    onLanded();
     vi.runAllTimers();
     expect(show).toHaveBeenCalledTimes(1);
   });
 
-  it("still shows the result when transitionend never fires", () => {
+  it("still shows the result when the landing never finishes (a hidden tab pauses frames)", () => {
     const show = vi.fn();
     awaitSpin(show, animated);
     vi.advanceTimersByTime(SPIN_MS + 299);
@@ -341,22 +353,22 @@ describe("awaitSpin", () => {
     expect(show).toHaveBeenCalledTimes(1);
   });
 
-  it("shows the result on transitionend, and once only when the timer fires too", () => {
+  it("shows the result when the landing finishes, and once only when the timer fires too", () => {
     const show = vi.fn();
-    const onTransitionEnd = awaitSpin(show, animated);
+    const onLanded = awaitSpin(show, animated);
     vi.advanceTimersByTime(SPIN_MS);
-    onTransitionEnd();
+    onLanded();
     expect(show).toHaveBeenCalledTimes(1);
     vi.advanceTimersByTime(1_000);
-    onTransitionEnd();
+    onLanded();
     expect(show).toHaveBeenCalledTimes(1);
   });
 
-  it("shows the result once when the timer wins and transitionend comes late", () => {
+  it("shows the result once when the timer wins and the landing finishes late", () => {
     const show = vi.fn();
-    const onTransitionEnd = awaitSpin(show, animated);
+    const onLanded = awaitSpin(show, animated);
     vi.advanceTimersByTime(SPIN_MS + 300);
-    onTransitionEnd();
+    onLanded();
     expect(show).toHaveBeenCalledTimes(1);
   });
 });
