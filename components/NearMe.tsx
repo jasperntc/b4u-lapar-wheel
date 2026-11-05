@@ -75,7 +75,9 @@ function locate(): Promise<Centre | null> {
     navigator.geolocation.getCurrentPosition(
       (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
       () => resolve(null),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+      // No GPS wait (seconds, longer indoors): the Worker rounds the location to 3 decimals (~110 m) before Google
+      // sees it, so GPS precision is thrown away. A fix up to 10 minutes old is still the same neighbourhood.
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
     );
   });
 }
