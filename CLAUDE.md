@@ -126,7 +126,7 @@ Parked on 2026-10-28: see `docs/data/README.md`. The data and scripts stay. The 
 - Type sizes are the roles in app/globals.css (`text-title`, `text-place`, `text-spin-label`, `text-sheet-title`, `text-body`, `text-sub`, `text-small`, `text-kicker`, `text-button`, and for notices `text-notice-title`, `text-notice-kicker`, `text-notice-body`). Use only these roles. Bungee (`font-sign`) has only capitals, so only the title, place, spin, sheet-title and notice-title roles use it.
 - Labels, buttons and copy are in sentence case. Buttons and chips are pill-shaped.
 - Every text pair passes WCAG AA (4.5:1) in both looks. A test checks the token pairs.
-- Motion is only what docs/redesign.md lists: the spin, the lights coming on (day to night only), the filter sheet's slide-up, the result card's rise, and a notice dimming the wheel (and, out of spins at night, the stall's lights going off). Ticks, the landing buzz, swipe, the waiting spin and the bulb chase come in the next PR. Nothing else moves: no page-load animation, no fade-up on scroll. Everything respects `prefers-reduced-motion` and a hidden page: no animation, same result.
+- Motion is only what docs/redesign.md lists: the spin with its ticks, landing buzz, swipe, waiting spin, night bulb chase and winner highlight, the lights coming on (day to night only), the filter sheet's slide-up, the result card's rise, and a notice dimming the wheel (and, out of spins at night, the stall's lights going off). Nothing else moves: no page-load animation, no fade-up on scroll. Everything respects `prefers-reduced-motion` and a hidden page: no animation, same result.
 - It must not look like the portfolio.
 - Works at phone width first. Most visitors come from an Instagram story.
 

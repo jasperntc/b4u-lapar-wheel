@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { LookSwitch } from "@/components/LookSwitch";
 import { NearMe } from "@/components/NearMe";
+import { SoundSwitch } from "@/components/SoundSwitch";
 import { lightTimings } from "@/lib/look";
 import { laparToken } from "@/lib/tokens";
 
@@ -37,7 +38,10 @@ export default function Home() {
         <NearMe />
 
         <footer className="mt-6 flex flex-col items-center gap-4">
-          <LookSwitch themeColor={laparToken("ground")} />
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <LookSwitch themeColor={laparToken("ground")} />
+            <SoundSwitch />
+          </div>
           <a
             href="https://built4you.jasperntc.dev"
             className="inline-flex items-center gap-2 font-display text-small text-ink-soft underline underline-offset-4"

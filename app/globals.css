@@ -236,6 +236,20 @@ body::before {
   animation: none;
 }
 
+/* The night bulb chase: alternate bulbs dim as each segment passes the pointer (data-chase is the segment's
+   parity, set per tick). It outranks the rules above, so it takes over the bulbs if the lights come on mid-spin. */
+[data-look="night"] [data-chase="0"] g.wheel-bulb:nth-of-type(odd),
+[data-look="night"] [data-chase="1"] g.wheel-bulb:nth-of-type(even) {
+  opacity: 0.3;
+  animation: none;
+}
+
+/* Landed: every wheel bulb burns fully on and steady, even if the lights come on afterwards. */
+[data-look="night"] [data-landed] g.wheel-bulb:nth-of-type(n) {
+  opacity: 1;
+  animation: none;
+}
+
 /* The look's colours cross-fade over 400 ms. Taps go through to the page meanwhile. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -315,7 +329,8 @@ body::before {
   [data-lights] .lamp,
   [data-lights] .wheel-bulb,
   [data-lights] .title,
-  .rise {
+  .rise,
+  [data-look="night"] [data-chase] g.wheel-bulb:nth-of-type(n) {
     opacity: 1;
     animation: none;
   }

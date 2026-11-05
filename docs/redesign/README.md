@@ -10,4 +10,4 @@ How Lapar Wheel should look, as of 2026-11-04.
 
 Screens: `start`, `result`, `sheet`, `empty-2` (nothing open at 2 km), `empty-10` (nothing open at 10 km with filters), `cap` (out of spins for everyone), `ip-cap` (out of spins for you), `rate` (slow down), `refused` (location refused), `shared` (opened from a share link), `shared-loading` (checking a share link), `shared-gone` (the shared place isn't available anymore), `shared-cap` (a share link opened when Lapar Wheel is out of spins).
 
-The Sound toggle and the "Or swipe the wheel" hint arrive in PR 2. The night `cap` and `ip-cap` screens show the stall closed: roof bulbs and neon off, wheel dimmed.
+The night `cap` and `ip-cap` screens show the stall closed: roof bulbs and neon off, wheel dimmed.

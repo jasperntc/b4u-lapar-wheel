@@ -3,6 +3,10 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { LOOK_KEY, lightTimings, lookFor, shouldPlayLights, type Look, type LookChoice } from "@/lib/look";
 
+/** The footer's small toggle pills: the Look switch and the Sound toggle. */
+export const pill =
+  "min-h-8 cursor-pointer rounded-full border-(length:--edge) border-subtle-edge bg-ghost px-3 text-small text-ink aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-on-accent";
+
 const CHOICES: [LookChoice, string][] = [
   ["auto", "Auto"],
   ["day", "Day"],
@@ -80,7 +84,7 @@ export function LookSwitch({ themeColor }: { themeColor: Record<Look, string> })
           type="button"
           aria-pressed={choice === value}
           onClick={() => choose(value)}
-          className="min-h-8 cursor-pointer rounded-full border-(length:--edge) border-subtle-edge bg-ghost px-3 text-small text-ink aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-on-accent"
+          className={pill}
         >
           {label}
         </button>

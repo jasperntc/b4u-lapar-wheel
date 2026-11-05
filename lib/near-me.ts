@@ -144,21 +144,24 @@ export function mapsUrl(name: string, placeId: string): string {
 
 /**
  * The wheel's next rotation in degrees, clockwise. Segment i spans [i, i + 1] × 360/n from the top;
- * the result turns forward at least 5 full turns and puts the centre of `index` under the top pointer.
+ * the result turns at least 5 full turns and puts the centre of `index` under the top pointer.
+ * `dir` -1 reaches the same segment turning backwards, after a backwards swipe: only the direction changes.
  */
-export function wheelRotation(current: number, index: number, n: number): number {
+export function wheelRotation(current: number, index: number, n: number, dir: 1 | -1 = 1): number {
   const target = (((360 - ((index + 0.5) * 360) / n) % 360) + 360) % 360;
+  if (dir === -1) return current - 5 * 360 - ((((current - target) % 360) + 360) % 360);
   const delta = (((target - current) % 360) + 360) % 360;
   return current + 5 * 360 + delta;
 }
 
-/** How long the wheel turns. The Wheel's transition and the fallback timer both use it. */
+/** How long the wheel's landing takes. The fallback timer uses it too. */
 export const SPIN_MS = 4000;
 
 /**
- * Starts waiting for a spin's result and returns the wheel's transitionend handler. `show` runs exactly once:
- * straight away when the animation is skipped (a hidden page or reduced motion), otherwise on transitionend or
- * SPIN_MS + 300 ms later, whichever comes first. The timer covers a transitionend that never fires.
+ * Starts waiting for a spin's result and returns the handler for the landing finishing. `show` runs exactly once:
+ * straight away when the animation is skipped (a hidden page or reduced motion), otherwise when the landing
+ * finishes or SPIN_MS + 300 ms later, whichever comes first. A hidden tab pauses animation frames; the timer
+ * still shows the pick.
  */
 export function awaitSpin(show: () => void, skip: { hidden: boolean; reducedMotion: boolean }): () => void {
   let shown = false;

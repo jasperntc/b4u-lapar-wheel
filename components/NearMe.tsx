@@ -21,7 +21,6 @@ import {
   searchNearby,
   awaitSpin,
   cachedPlaces,
-  wheelRotation,
   type EmptyAction,
   type Filters,
   type NearbyRequest,
@@ -29,6 +28,8 @@ import {
   type SpinCache,
 } from "@/lib/near-me";
 import { pickIndex } from "@/lib/pick";
+import { buzz, chime, unlockAudio } from "@/lib/sound";
+import { Spinner, landingTarget } from "@/lib/spin";
 import {
   capMapsUrl,
   checkPlace,
@@ -54,10 +55,15 @@ type Shared = { id: string; view: SharedView | "loading"; name: string | null; c
 // "/lapar-wheel/": a plain fetch path doesn't get the basePath on its own.
 const base = import.meta.env.BASE_URL;
 const MAX_SEGMENTS = 20;
+const BUSY_LABEL = { locating: "Finding you…", searching: "Finding open places…", landing: "Spinning…" };
 const mapsLink =
   "inline-flex min-h-12 items-center justify-center rounded-full border-2 border-maps-edge bg-maps text-button font-extrabold text-on-maps";
 const chip =
   "inline-flex min-h-11 cursor-pointer items-center rounded-full border-(length:--edge) border-ghost-edge bg-ghost px-4 text-button text-ink has-checked:border-accent has-checked:bg-accent has-checked:text-on-accent has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus";
+
+// A hidden page may never run animation frames, so it skips the animation like reduced motion: same pick, shown at once.
+const motion = () => ({ hidden: document.hidden, reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches });
+const animates = (m: ReturnType<typeof motion>) => !m.hidden && !m.reducedMotion;
 
 const insideKK = ({ lat, lon }: Centre) =>
   lat >= KK_BOX.south && lat <= KK_BOX.north && lon >= KK_BOX.west && lon <= KK_BOX.east;
@@ -87,16 +93,16 @@ export function NearMe() {
   const [cuisine, setCuisine] = useState("");
   const [ratingOn, setRatingOn] = useState(true);
   const [places, setPlaces] = useState<Place[]>([]);
-  const [rotation, setRotation] = useState(0);
   const [busy, setBusy] = useState(false);
   const [pick, setPick] = useState<Place | null>(null);
   const [notice, setNotice] = useState<Shown | null>(null);
   // Refs, so a second tap in the same tick can't start a second spin.
   const busyRef = useRef(false);
   const cache = useRef<SpinCache | null>(null);
-  const pending = useRef<Place | null>(null);
-  const spinEnd = useRef(() => {});
-  const [animate, setAnimate] = useState(true);
+  const [spinner] = useState(() => new Spinner());
+  // What the Spin button says while busy, and the landed segment the wheel highlights.
+  const [phase, setPhase] = useState<"locating" | "searching" | "landing">("landing");
+  const [winner, setWinner] = useState<number | null>(null);
   const sheet = useRef<HTMLDialogElement>(null);
   const filtersAtOpen = useRef("");
   const summary = useRef<HTMLButtonElement>(null);
@@ -131,25 +137,39 @@ export function NearMe() {
     setBusy(false);
   }
 
-  function finishSpin() {
-    setPick(pending.current);
+  /** No pick this time: a waiting wheel coasts to a stop. */
+  function halt() {
+    spinner.coast();
     done();
   }
 
-  /** Spins with the current filters, or with `over` when a notice's button has just changed one. */
-  async function spin(over: Partial<Filters> = {}) {
+  // Unmounting stops the frame loop.
+  useEffect(() => () => spinner.snap(), [spinner]);
+
+  /**
+   * Spins with the current filters, or with `over` when a notice's button has just changed one.
+   * `swipe` is a fast release's signed speed: the wheel keeps that direction.
+   */
+  async function spin(over: Partial<Filters> = {}, swipe = 0) {
     const f = { radiusKm, cuisine, ratingOn, ...over };
     if (busyRef.current) return;
+    // Before any await: browsers only start audio inside the tap itself.
+    unlockAudio();
     busyRef.current = true;
     setBusy(true);
     setNotice(null);
     setPick(null);
+    setWinner(null);
     cancelCopied.current();
     setCopied(null);
     setCopyFailed(false);
+    // While the location and places are on their way, the wheel keeps turning.
+    if (animates(motion())) spinner.wait(swipe);
 
+    // Only a spin with no location yet has to find one first.
+    setPhase(mode === "unset" ? "locating" : "searching");
     const centre = mode === "here" ? here : mode === "area" ? area : await askLocation();
-    if (!centre) return done();
+    if (!centre) return halt();
 
     const request: NearbyRequest = {
       lat: centre.lat,
@@ -161,10 +181,11 @@ export function NearMe() {
     const key = JSON.stringify(request);
     let list = cachedPlaces(cache.current, key);
     if (!list) {
+      setPhase("searching");
       const result = await searchNearby(request, base);
       if (!result.ok) {
         setNotice({ kind: "error", code: result.error });
-        return done();
+        return halt();
       }
       list = result.places.slice(0, MAX_SEGMENTS);
       cache.current = { key, places: list };
@@ -172,16 +193,28 @@ export function NearMe() {
     }
     if (!list.length) {
       setNotice({ kind: "empty" });
-      return done();
+      return halt();
     }
 
+    // Pick first; the landing is computed from the pick and always ends on it.
     const index = pickIndex(list.length);
-    pending.current = list[index];
-    // A hidden page may never run the transition, so it skips the animation like reduced motion: same pick, shown at once.
-    const skip = { hidden: document.hidden, reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches };
-    setAnimate(!skip.hidden && !skip.reducedMotion);
-    setRotation((r) => wheelRotation(r, index, list.length));
-    spinEnd.current = awaitSpin(finishSpin, skip);
+    const picked = list[index];
+    spinner.setSegments(list.length);
+    const target = landingTarget(spinner.angle, index, list.length, spinner.speed);
+    const skip = motion();
+    const animated = animates(skip);
+    setPhase("landing");
+    const finish = awaitSpin(() => {
+      spinner.snap(target);
+      setPick(picked);
+      setWinner(index);
+      done();
+      // Sound isn't motion: the chime plays under reduced motion too.
+      chime();
+      // 70 ms and up: many phone motors can't render a 30 ms pulse at all.
+      buzz(animated ? [70, 50, 110] : 70);
+    }, skip);
+    if (animated) spinner.land(target, finish);
   }
 
   /** A nothing-open button: loosen that one filter and spin at once. */
@@ -236,6 +269,7 @@ export function NearMe() {
     if (filters === filtersAtOpen.current) return;
     setPick(null);
     setNotice(null);
+    setWinner(null);
     // The opener may have been the result card's Change filters link, which is now gone.
     requestAnimationFrame(() => summary.current?.focus());
   }
@@ -273,10 +307,11 @@ export function NearMe() {
       >
         <Wheel
           names={places.map((p) => p.name)}
-          rotation={rotation}
-          animate={animate}
           spinning={busy}
-          onSpinEnd={() => spinEnd.current()}
+          spinner={spinner}
+          // A swipe starts a spin wherever the Spin or Spin again button would.
+          swipe={!busy && !notice && !showRefused && !shared ? (speed) => void spin({}, speed) : null}
+          winner={winner}
         />
       </section>
 
@@ -459,8 +494,9 @@ export function NearMe() {
             <span className="font-extrabold text-accent underline underline-offset-4">Change</span>
           </button>
           <Button variant="spin" onClick={() => void spin()} disabled={busy} aria-busy={busy}>
-            {busy ? "Spinning…" : "Spin"}
+            {busy ? BUSY_LABEL[phase] : "Spin"}
           </Button>
+          <p className="text-center text-small">Or swipe the wheel</p>
         </>
       )}
 
