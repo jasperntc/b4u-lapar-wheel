@@ -38,6 +38,8 @@ type Props = {
   spinner: Spinner;
   /** Starts a spin from a fast release, with its signed speed. Null when a swipe can't start one. */
   swipe: ((speed: number) => void) | null;
+  /** The landed segment: the others dim and the night bulbs burn steady, until the next spin or a filter change. */
+  winner: number | null;
 };
 
 // A finger held still this long before letting go is a slow release, whatever its last move was.
@@ -47,7 +49,7 @@ const STILL_MS = 100;
  * The multicolour spinner. It only turns to the angle it's given; the pick is made before.
  * Both looks are drawn, and CSS on [data-look] shows one: the day rim, or the night plate ring and bulbs.
  */
-export function Wheel({ names, spinning, spinner, swipe }: Props) {
+export function Wheel({ names, spinning, spinner, swipe, winner }: Props) {
   const labels = names.length ? names : PLACEHOLDER;
   const n = labels.length;
   const seg = 360 / n;
@@ -58,11 +60,11 @@ export function Wheel({ names, spinning, spinner, swipe }: Props) {
     spinner.setSegments(n);
   }, [spinner, n]);
 
-  // Each tick clicks and steps the night bulb chase; it ends when the wheel stops.
+  // Each tick steps the night bulb chase, and clicks once the landing starts; the chase ends when the wheel stops.
   useEffect(() => {
     spinner.listen({
-      onTick: (segment) => {
-        tick();
+      onTick: (segment, audible) => {
+        if (audible) tick();
         if (wrap.current) wrap.current.dataset.chase = String(segment % 2);
       },
       onStop: () => delete wrap.current?.dataset.chase,
@@ -111,6 +113,7 @@ export function Wheel({ names, spinning, spinner, swipe }: Props) {
       className={`relative mx-auto w-full max-w-[300px] ${swipe ? "cursor-grab touch-none select-none" : ""}`}
       aria-hidden="true"
       data-spinning={spinning || undefined}
+      data-landed={winner !== null || undefined}
       onPointerDown={down}
       onPointerMove={move}
       onPointerUp={up}
@@ -126,7 +129,11 @@ export function Wheel({ names, spinning, spinner, swipe }: Props) {
               const mid = (i + 0.5) * seg;
               const fill = { fill: `var(--seg-${c})` };
               return (
-                <g key={i}>
+                <g
+                  key={i}
+                  className="transition-opacity duration-200 motion-reduce:transition-none"
+                  style={{ opacity: winner !== null && i !== winner ? 0.55 : 1 }}
+                >
                   {n === 1 ? (
                     <circle cx={C} cy={C} r={R} style={fill} strokeWidth="2" className="stroke-seg-stroke" />
                   ) : (

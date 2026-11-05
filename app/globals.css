@@ -244,6 +244,12 @@ body::before {
   animation: none;
 }
 
+/* Landed: every wheel bulb burns fully on and steady, even if the lights come on afterwards. */
+[data-look="night"] [data-landed] g.wheel-bulb:nth-of-type(n) {
+  opacity: 1;
+  animation: none;
+}
+
 /* The look's colours cross-fade over 400 ms. Taps go through to the page meanwhile. */
 ::view-transition-old(root),
 ::view-transition-new(root) {

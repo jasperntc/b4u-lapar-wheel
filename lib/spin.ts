@@ -41,7 +41,8 @@ export function landingTarget(current: number, index: number, n: number, speed: 
 }
 
 type Frames = { now: () => number; raf: (cb: () => void) => number; caf: (id: number) => void };
-type Hooks = { onTick?: (segment: number) => void; onStop?: () => void };
+/** `audible` is false while waiting or coasting: ticks start with the landing (and a drag). The bulb chase runs throughout. */
+type Hooks = { onTick?: (segment: number, audible: boolean) => void; onStop?: () => void };
 
 const browser: Frames = {
   now: () => performance.now(),
@@ -60,7 +61,7 @@ export class Spinner {
   private mode: "idle" | "wait" | "glide" = "idle";
   private frame = 0;
   private last = 0;
-  private glide = { from: 0, to: 0, t0: 0, ms: 0, done: undefined as (() => void) | undefined };
+  private glide = { from: 0, to: 0, t0: 0, ms: 0, audible: false, done: undefined as (() => void) | undefined };
 
   constructor(private frames: Frames = browser) {}
 
@@ -84,7 +85,7 @@ export class Spinner {
 
   /** The finger's turn. Ignored while it turns on its own. */
   drag(delta: number) {
-    if (!this.moving) this.moveTo(this.angle + delta);
+    if (!this.moving) this.moveTo(this.angle + delta, true);
   }
 
   /** The waiting spin: from `v0` (keeping its sign) toward WAIT_SPEED that way. */
@@ -96,14 +97,14 @@ export class Spinner {
 
   /** Eases out (cubic) from here to `target` over SPIN_MS, then calls `done`. */
   land(target: number, done: () => void) {
-    this.glideTo(target, SPIN_MS, done);
+    this.glideTo(target, SPIN_MS, true, done);
   }
 
   /** Eases a waiting wheel to a stop; the distance makes it start at its current speed. */
   coast() {
     if (this.mode !== "wait") return;
     if (!this.speed) return this.halt();
-    this.glideTo(this.angle + (this.speed * STOP_MS) / 3, STOP_MS);
+    this.glideTo(this.angle + (this.speed * STOP_MS) / 3, STOP_MS, false);
   }
 
   /** Stops at once, at `target` if given: the fallback timer and a skipped animation. */
@@ -113,8 +114,8 @@ export class Spinner {
     this.halt();
   }
 
-  private glideTo(to: number, ms: number, done?: () => void) {
-    this.glide = { from: this.angle, to, t0: this.frames.now(), ms, done };
+  private glideTo(to: number, ms: number, audible: boolean, done?: () => void) {
+    this.glide = { from: this.angle, to, t0: this.frames.now(), ms, audible, done };
     this.mode = "glide";
     this.start();
   }
@@ -141,12 +142,12 @@ export class Spinner {
     if (this.mode === "wait") {
       const goal = (this.speed < 0 ? -1 : 1) * WAIT_SPEED;
       this.speed += (goal - this.speed) * (1 - Math.exp(-dt / WAIT_EASE_MS));
-      this.moveTo(this.angle + this.speed * dt);
+      this.moveTo(this.angle + this.speed * dt, false);
     } else if (this.mode === "glide") {
       const g = this.glide;
       const t = Math.min(1, (now - g.t0) / g.ms);
       const before = this.angle;
-      this.moveTo(t < 1 ? g.from + (g.to - g.from) * easeOutCubic(t) : g.to);
+      this.moveTo(t < 1 ? g.from + (g.to - g.from) * easeOutCubic(t) : g.to, g.audible);
       if (dt) this.speed = (this.angle - before) / dt;
       if (t >= 1) {
         this.halt();
@@ -157,9 +158,9 @@ export class Spinner {
     if (this.moving) this.frame = this.frames.raf(this.step);
   };
 
-  private moveTo(angle: number) {
-    // One click per frame at most: a fast landing over 20 segments would otherwise ask for ~80 a second.
-    if (ticksBetween(this.angle, angle, this.n)) this.hooks.onTick?.(segmentAtPointer(angle, this.n));
+  private moveTo(angle: number, audible: boolean) {
+    // One tick per frame at most: a fast landing over 20 segments would otherwise ask for ~80 a second.
+    if (ticksBetween(this.angle, angle, this.n)) this.hooks.onTick?.(segmentAtPointer(angle, this.n), audible);
     this.angle = angle;
     this.render();
   }

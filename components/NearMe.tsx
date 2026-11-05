@@ -28,7 +28,7 @@ import {
   type SpinCache,
 } from "@/lib/near-me";
 import { pickIndex } from "@/lib/pick";
-import { buzz, unlockAudio } from "@/lib/sound";
+import { buzz, chime, unlockAudio } from "@/lib/sound";
 import { Spinner, landingTarget } from "@/lib/spin";
 import {
   capMapsUrl,
@@ -55,6 +55,7 @@ type Shared = { id: string; view: SharedView | "loading"; name: string | null; c
 // "/lapar-wheel/": a plain fetch path doesn't get the basePath on its own.
 const base = import.meta.env.BASE_URL;
 const MAX_SEGMENTS = 20;
+const BUSY_LABEL = { locating: "Finding you…", searching: "Finding open places…", landing: "Spinning…" };
 const mapsLink =
   "inline-flex min-h-12 items-center justify-center rounded-full border-2 border-maps-edge bg-maps text-button font-extrabold text-on-maps";
 const chip =
@@ -99,6 +100,9 @@ export function NearMe() {
   const busyRef = useRef(false);
   const cache = useRef<SpinCache | null>(null);
   const [spinner] = useState(() => new Spinner());
+  // What the Spin button says while busy, and the landed segment the wheel highlights.
+  const [phase, setPhase] = useState<"locating" | "searching" | "landing">("landing");
+  const [winner, setWinner] = useState<number | null>(null);
   const sheet = useRef<HTMLDialogElement>(null);
   const filtersAtOpen = useRef("");
   const summary = useRef<HTMLButtonElement>(null);
@@ -155,12 +159,15 @@ export function NearMe() {
     setBusy(true);
     setNotice(null);
     setPick(null);
+    setWinner(null);
     cancelCopied.current();
     setCopied(null);
     setCopyFailed(false);
     // While the location and places are on their way, the wheel keeps turning.
     if (animates(motion())) spinner.wait(swipe);
 
+    // Only a spin with no location yet has to find one first.
+    setPhase(mode === "unset" ? "locating" : "searching");
     const centre = mode === "here" ? here : mode === "area" ? area : await askLocation();
     if (!centre) return halt();
 
@@ -174,6 +181,7 @@ export function NearMe() {
     const key = JSON.stringify(request);
     let list = cachedPlaces(cache.current, key);
     if (!list) {
+      setPhase("searching");
       const result = await searchNearby(request, base);
       if (!result.ok) {
         setNotice({ kind: "error", code: result.error });
@@ -195,11 +203,16 @@ export function NearMe() {
     const target = landingTarget(spinner.angle, index, list.length, spinner.speed);
     const skip = motion();
     const animated = animates(skip);
+    setPhase("landing");
     const finish = awaitSpin(() => {
       spinner.snap(target);
       setPick(picked);
+      setWinner(index);
       done();
-      buzz(animated ? [30, 40, 60] : 40);
+      // Sound isn't motion: the chime plays under reduced motion too.
+      chime();
+      // 70 ms and up: many phone motors can't render a 30 ms pulse at all.
+      buzz(animated ? [70, 50, 110] : 70);
     }, skip);
     if (animated) spinner.land(target, finish);
   }
@@ -256,6 +269,7 @@ export function NearMe() {
     if (filters === filtersAtOpen.current) return;
     setPick(null);
     setNotice(null);
+    setWinner(null);
     // The opener may have been the result card's Change filters link, which is now gone.
     requestAnimationFrame(() => summary.current?.focus());
   }
@@ -297,6 +311,7 @@ export function NearMe() {
           spinner={spinner}
           // A swipe starts a spin wherever the Spin or Spin again button would.
           swipe={!busy && !notice && !showRefused && !shared ? (speed) => void spin({}, speed) : null}
+          winner={winner}
         />
       </section>
 
@@ -479,7 +494,7 @@ export function NearMe() {
             <span className="font-extrabold text-accent underline underline-offset-4">Change</span>
           </button>
           <Button variant="spin" onClick={() => void spin()} disabled={busy} aria-busy={busy}>
-            {busy ? "Spinning…" : "Spin"}
+            {busy ? BUSY_LABEL[phase] : "Spin"}
           </Button>
           <p className="text-center text-small">Or swipe the wheel</p>
         </>

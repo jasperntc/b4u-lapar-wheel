@@ -166,6 +166,27 @@ describe("Spinner", () => {
     expect(d.ticks).not.toHaveBeenCalled();
     d.s.drag(50);
     expect(d.ticks).toHaveBeenCalledTimes(1);
+    expect(d.ticks).toHaveBeenLastCalledWith(expect.any(Number), true);
+  });
+
+  it("stays silent while waiting and coasting: ticks start with the landing", () => {
+    const { s, frame, settle, ticks } = rig(12);
+    const audible = () => ticks.mock.calls.filter((c) => c[1]).length;
+    s.wait(0.8);
+    for (let i = 0; i < 120; i++) frame();
+    // The chase still steps (the hook fires), but nothing clicks.
+    expect(ticks).toHaveBeenCalled();
+    expect(audible()).toBe(0);
+    s.coast();
+    settle();
+    expect(audible()).toBe(0);
+
+    s.wait(0);
+    for (let i = 0; i < 60; i++) frame();
+    expect(audible()).toBe(0);
+    s.land(landingTarget(s.angle, 4, 12, s.speed), () => {});
+    settle();
+    expect(audible()).toBeGreaterThan(0);
   });
 
   it("ignores a drag while it turns on its own, and snaps to a landing target", () => {

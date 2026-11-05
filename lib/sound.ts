@@ -56,6 +56,25 @@ export function tick() {
   osc.stop(t + 0.04);
 }
 
+/** The landing chime: two short sine notes, 70 ms each and 40 ms apart. Day 1320 then 1760 Hz, night 880 then 1320 Hz. */
+export function chime() {
+  const ctx = audio;
+  if (!ctx || ctx.state !== "running" || !soundOn()) return;
+  const notes = document.documentElement.dataset.look === "night" ? [880, 1320] : [1320, 1760];
+  notes.forEach((hz, i) => {
+    const t = ctx.currentTime + i * 0.11;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = hz;
+    gain.gain.setValueAtTime(0.22, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.075);
+  });
+}
+
 /** Vibrates where the browser can. iPhone Safari has no vibrate: that's skipped, not a failure. */
 export function buzz(pattern: number | number[]) {
   try {

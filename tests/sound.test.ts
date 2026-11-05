@@ -55,6 +55,64 @@ describe("the sound setting", () => {
   });
 });
 
+describe("chime", () => {
+  // A stand-in for Web Audio that records each note's wave and pitch.
+  function fakeAudio(look: "day" | "night") {
+    const notes: [string, number][] = [];
+    class Ctx {
+      state = "running";
+      currentTime = 0;
+      destination = {};
+      createOscillator() {
+        const o = { type: "", frequency: { value: 0 }, connect: <T>(g: T) => g, start() {}, stop() {} };
+        // Recorded when it starts, once type and pitch are set.
+        o.start = () => void notes.push([o.type, o.frequency.value]);
+        return o;
+      }
+      createGain() {
+        return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect: <T>(d: T) => d };
+      }
+      resume() {
+        return Promise.resolve();
+      }
+    }
+    vi.stubGlobal("window", { AudioContext: Ctx });
+    vi.stubGlobal("document", { documentElement: { dataset: { look } } });
+    return notes;
+  }
+
+  it("plays two short sine notes per landing: 1320 then 1760 Hz by day, 880 then 1320 Hz by night", async () => {
+    const day = fakeAudio("day");
+    const s = await load();
+    s.unlockAudio();
+    s.chime();
+    expect(day).toEqual([
+      ["sine", 1320],
+      ["sine", 1760],
+    ]);
+    vi.resetModules();
+    const night = fakeAudio("night");
+    const n = await load();
+    n.unlockAudio();
+    n.chime();
+    expect(night).toEqual([
+      ["sine", 880],
+      ["sine", 1320],
+    ]);
+  });
+
+  it("stays quiet with Sound off, and before any tap has started audio", async () => {
+    const notes = fakeAudio("day");
+    const s = await load();
+    s.chime();
+    expect(notes).toEqual([]);
+    s.unlockAudio();
+    s.setSound(false);
+    s.chime();
+    expect(notes).toEqual([]);
+  });
+});
+
 describe("buzz", () => {
   it("does nothing, without throwing, where there's no vibrate (iPhone Safari)", async () => {
     vi.stubGlobal("navigator", {});

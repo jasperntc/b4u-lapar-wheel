@@ -145,8 +145,10 @@ function wheel(names, pick) {
   let segs = "";
   names.forEach((name, i) => {
     const c = colourIndex(i, n), mid = (i + 0.5) * seg;
+    segs += `<g${pick != null && i !== pick ? ' opacity="0.55"' : ""}>`;
     segs += `<path d="M150 150 L${pt(i * seg, R)} A${R} ${R} 0 0 1 ${pt((i + 1) * seg, R)} Z" fill="${FILLS[look][c]}" stroke="${night ? "#1a1530" : "#1d1d1b"}" stroke-width="2"/>`;
     if (name) segs += `<text x="${150 + R - 8}" y="150" transform="rotate(${mid - 90} 150 150)" text-anchor="end" dominant-baseline="central" font-family="Figtree" font-weight="600" font-size="12" fill="${INKS[look][c]}">${name.length > 13 ? name.slice(0, 12) + "…" : name}</text>`;
+    segs += `</g>`;
   });
   const rim = night ? "" : `<image href="../../public/images/wheel-rim-day.png" x="0" y="0" width="300" height="300"/>`;
   let bulbs = "";
